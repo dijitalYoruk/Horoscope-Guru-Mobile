@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 
 class ChatMessage {
   final String text;
@@ -101,6 +103,10 @@ class ChatBubble extends StatelessWidget {
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
 
+  static const bool enableAds = true;
+  static const int maxMessages = 4;
+  static const String messageCountKey = 'message_count';
+
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
@@ -127,6 +133,7 @@ class _ChatScreenState extends State<ChatScreen> {
   int _messageCount = 0;
   bool _showAd = false;
   bool _awaitingAd = false;
+  bool _isEmojiPickerVisible = false;
 
   final String _androidAdUnitId = 'ca-app-pub-3940256099942544/5224354917';
   final String _iosAdUnitId = 'ca-app-pub-3940256099942544/5224354917';
@@ -136,7 +143,22 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    _initAdMob();
+    _loadMessageCount();
+    if (ChatScreen.enableAds) {
+      _initAdMob();
+    }
+  }
+
+  Future<void> _loadMessageCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _messageCount = prefs.getInt(ChatScreen.messageCountKey) ?? 0;
+    });
+  }
+
+  Future<void> _saveMessageCount(int count) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(ChatScreen.messageCountKey, count);
   }
 
   Future<void> _initAdMob() async {
@@ -179,23 +201,27 @@ class _ChatScreenState extends State<ChatScreen> {
     _loadRewardedAd();
   }
 
-  void _onAdWatched(RewardItem reward) {
+  void _onAdWatched(RewardItem reward) async {
+    await _saveMessageCount(0);
     setState(() {
       _messageCount = 0;
       _awaitingAd = false;
     });
   }
 
-  void _handleSubmitted(String text) {
+  void _handleSubmitted(String text) async {
     if (text.trim().isEmpty) return;
 
-    if (_messageCount >= 4 && !_awaitingAd) {
+    if (ChatScreen.enableAds &&
+        _messageCount >= ChatScreen.maxMessages &&
+        !_awaitingAd) {
       _showRewardedAdDialog();
       return;
     }
 
     _messageController.clear();
     _messageCount++;
+    await _saveMessageCount(_messageCount);
 
     setState(() {
       _messages.insert(
@@ -299,70 +325,146 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildInputArea(Color textColor, Color buttonColor) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      decoration: BoxDecoration(
-        color: Colors.deepPurple.shade800,
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.deepPurple.shade700,
-                borderRadius: BorderRadius.circular(24),
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          decoration: BoxDecoration(
+            color: Colors.deepPurple.shade800,
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(0),
+              bottomRight: Radius.circular(0),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 8,
+                offset: const Offset(0, -2),
               ),
-              child: Row(
-                children: [
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: TextField(
-                      controller: _messageController,
-                      focusNode: _messageFocusNode,
-                      style: TextStyle(color: textColor),
-                      decoration: InputDecoration.collapsed(
-                        hintText: "Type your message...",
-                        hintStyle: TextStyle(
-                          color: Colors.grey.shade400,
-                          fontSize: 15,
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.deepPurple.shade700,
+                    borderRadius: BorderRadius.circular(0),
+                  ),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextField(
+                          controller: _messageController,
+                          focusNode: _messageFocusNode,
+                          style: TextStyle(color: textColor),
+                          decoration: InputDecoration.collapsed(
+                            hintText: "Type your message...",
+                            hintStyle: TextStyle(
+                              color: Colors.grey.shade400,
+                              fontSize: 15,
+                            ),
+                          ),
+                          onSubmitted: _handleSubmitted,
                         ),
                       ),
-                      onSubmitted: _handleSubmitted,
+                      IconButton(
+                        icon: Icon(Icons.emoji_emotions_outlined,
+                            color: textColor.withOpacity(0.7)),
+                        onPressed: () {
+                          setState(() {
+                            _isEmojiPickerVisible = !_isEmojiPickerVisible;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                decoration: BoxDecoration(
+                  color: buttonColor,
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.send, color: textColor),
+                  onPressed: () => _handleSubmitted(_messageController.text),
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (_isEmojiPickerVisible)
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.deepPurple.shade800,
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(0),
+                bottomRight: Radius.circular(0),
+              ),
+            ),
+            child: SizedBox(
+              height: 250,
+              child: EmojiPicker(
+                onEmojiSelected: (category, emoji) {
+                  setState(() {
+                    _messageController.text += emoji.emoji;
+                  });
+
+                },
+                config: Config(
+                  height: 250,
+                  viewOrderConfig: ViewOrderConfig(),
+                  checkPlatformCompatibility: true,
+                  emojiSet: null,
+                  emojiTextStyle: TextStyle(fontSize: 32, color: Colors.white),
+                  customBackspaceIcon:
+                      Icon(Icons.backspace, color: Colors.white),
+                  customSearchIcon:
+                      Icon(Icons.search, color: Colors.white),
+                  emojiViewConfig: EmojiViewConfig(
+                    columns: 7,
+                    emojiSizeMax: 32.0,
+                    backgroundColor: const Color(0xFF0F0B21),
+                    verticalSpacing: 0,
+                    horizontalSpacing: 0,
+                    gridPadding: EdgeInsets.zero,
+                    recentsLimit: 28,
+                    replaceEmojiOnLimitExceed: false,
+                    noRecents: Text(
+                      'No Recents',
+                      style:
+                          TextStyle(fontSize: 20, color: Colors.grey.shade400),
+                      textAlign: TextAlign.center,
                     ),
+                    loadingIndicator: SizedBox.shrink(),
+                    buttonMode: ButtonMode.MATERIAL,
                   ),
-                  IconButton(
-                    icon: Icon(Icons.emoji_emotions_outlined,
-                        color: textColor.withOpacity(0.7)),
-                    onPressed: () {},
+                  skinToneConfig: SkinToneConfig(
+                    dialogBackgroundColor: Colors.deepPurple.shade800,
+                    indicatorColor: Colors.deepPurple.shade500,
                   ),
-                ],
+                  categoryViewConfig: CategoryViewConfig(
+                    backgroundColor: Colors.deepPurple.shade800,
+                    iconColor: Colors.grey.shade400,
+                    iconColorSelected: Colors.deepPurple.shade300,
+                    indicatorColor: Colors.deepPurple.shade300,
+
+                  ),
+                  bottomActionBarConfig: BottomActionBarConfig(
+                    backgroundColor: Colors.deepPurple.shade800,
+                    buttonColor: Colors.deepPurple.shade800,
+                  ),
+                  searchViewConfig: SearchViewConfig(
+                    backgroundColor: Colors.deepPurple.shade800,
+                  ),
+                ),
               ),
             ),
           ),
-          const SizedBox(width: 8),
-          Container(
-            decoration: BoxDecoration(
-              color: buttonColor,
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: Icon(Icons.send, color: textColor),
-              onPressed: () => _handleSubmitted(_messageController.text),
-            ),
-          ),
-        ],
-      ),
+      ],
     );
   }
 
