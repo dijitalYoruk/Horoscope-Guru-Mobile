@@ -1,8 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:flutter/rendering.dart';
 
 class ChatMessage {
   final String text;
@@ -129,9 +131,7 @@ class _ChatScreenState extends State<ChatScreen> {
   ];
 
   RewardedAd? _rewardedAd;
-  bool _isRewardedAdLoaded = false;
   int _messageCount = 0;
-  bool _showAd = false;
   bool _awaitingAd = false;
   bool _isEmojiPickerVisible = false;
 
@@ -147,6 +147,9 @@ class _ChatScreenState extends State<ChatScreen> {
     if (ChatScreen.enableAds) {
       _initAdMob();
     }
+    _messageController.addListener(() {
+      // Remove the auto-close behavior when text changes
+    });
   }
 
   Future<void> _loadMessageCount() async {
@@ -174,7 +177,6 @@ class _ChatScreenState extends State<ChatScreen> {
         onAdLoaded: (ad) {
           setState(() {
             _rewardedAd = ad;
-            _isRewardedAdLoaded = true;
           });
           ad.fullScreenContentCallback = FullScreenContentCallback(
             onAdDismissedFullScreenContent: (ad) {
@@ -187,9 +189,7 @@ class _ChatScreenState extends State<ChatScreen> {
             },
           );
         },
-        onAdFailedToLoad: (error) {
-          setState(() => _isRewardedAdLoaded = false);
-        },
+        onAdFailedToLoad: (error) {},
       ),
     );
   }
@@ -367,6 +367,13 @@ class _ChatScreenState extends State<ChatScreen> {
                             ),
                           ),
                           onSubmitted: _handleSubmitted,
+                          onChanged: (text) {
+                            if (_isEmojiPickerVisible && text.isNotEmpty) {
+                              setState(() {
+                                _isEmojiPickerVisible = false;
+                              });
+                            }
+                          },
                         ),
                       ),
                       IconButton(
@@ -408,11 +415,18 @@ class _ChatScreenState extends State<ChatScreen> {
             child: SizedBox(
               height: 250,
               child: EmojiPicker(
-                onEmojiSelected: (category, emoji) {
+                onBackspacePressed: () {
                   setState(() {
-                    _messageController.text += emoji.emoji;
+                    _isEmojiPickerVisible = false;
                   });
-
+                },
+                onEmojiSelected: (category, emoji) {
+                  final currentText = _messageController.text;
+                  final newText = currentText + emoji.emoji;
+                  _messageController.value = TextEditingValue(
+                    text: newText,
+                    selection: TextSelection.collapsed(offset: newText.length),
+                  );
                 },
                 config: Config(
                   height: 250,
@@ -420,14 +434,13 @@ class _ChatScreenState extends State<ChatScreen> {
                   checkPlatformCompatibility: true,
                   emojiSet: null,
                   emojiTextStyle: TextStyle(fontSize: 32, color: Colors.white),
-                  customBackspaceIcon:
-                      Icon(Icons.backspace, color: Colors.white),
                   customSearchIcon:
-                      Icon(Icons.search, color: Colors.white),
+                      const Icon(Icons.search, color: Colors.white),
+                  customBackspaceIcon: const Icon(Icons.close, color: Colors.white),
                   emojiViewConfig: EmojiViewConfig(
                     columns: 7,
                     emojiSizeMax: 32.0,
-                    backgroundColor: const Color(0xFF0F0B21),
+                    backgroundColor: const Color(0xFF2C2C54),
                     verticalSpacing: 0,
                     horizontalSpacing: 0,
                     gridPadding: EdgeInsets.zero,
@@ -443,7 +456,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     buttonMode: ButtonMode.MATERIAL,
                   ),
                   skinToneConfig: SkinToneConfig(
-                    dialogBackgroundColor: Colors.deepPurple.shade800,
+                    dialogBackgroundColor: const Color(0xFF2C2C54),
                     indicatorColor: Colors.deepPurple.shade500,
                   ),
                   categoryViewConfig: CategoryViewConfig(
@@ -451,11 +464,11 @@ class _ChatScreenState extends State<ChatScreen> {
                     iconColor: Colors.grey.shade400,
                     iconColorSelected: Colors.deepPurple.shade300,
                     indicatorColor: Colors.deepPurple.shade300,
-
                   ),
                   bottomActionBarConfig: BottomActionBarConfig(
                     backgroundColor: Colors.deepPurple.shade800,
                     buttonColor: Colors.deepPurple.shade800,
+                    buttonIconColor: Colors.white,
                   ),
                   searchViewConfig: SearchViewConfig(
                     backgroundColor: Colors.deepPurple.shade800,
@@ -471,16 +484,18 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final backgroundColor = Colors.deepPurple.shade900;
-    final chatBackground = const Color(0xFF0F0B21);
+    final chatBackground = const Color(0xFF2C2C54);
     final userBubbleColor = Colors.deepOrange.shade700;
-    final aiBubbleColor = Colors.deepPurple.shade700;
+    final aiBubbleColor = Colors.deepPurple.shade500;
     final textColor = Colors.white;
 
     return Scaffold(
       backgroundColor: backgroundColor,
+      extendBody: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        systemOverlayStyle: SystemUiOverlayStyle.light,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: textColor),
           onPressed: () => Navigator.pop(context),
@@ -513,47 +528,49 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: chatBackground,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  topRight: Radius.circular(24),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius: 10,
-                    spreadRadius: 2,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: chatBackground,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
                   ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  topRight: Radius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    ),
+                  ],
                 ),
-                child: ListView.builder(
-                  reverse: true,
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-                  itemCount: _messages.length,
-                  itemBuilder: (context, index) {
-                    return ChatBubble(
-                      message: _messages[index],
-                      userBubbleColor: userBubbleColor,
-                      aiBubbleColor: aiBubbleColor,
-                      textColor: textColor,
-                    );
-                  },
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
+                  ),
+                  child: ListView.builder(
+                    reverse: true,
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      return ChatBubble(
+                        message: _messages[index],
+                        userBubbleColor: userBubbleColor,
+                        aiBubbleColor: aiBubbleColor,
+                        textColor: textColor,
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
-          ),
-          _buildInputArea(textColor, userBubbleColor),
-        ],
+            _buildInputArea(textColor, userBubbleColor),
+          ],
+        ),
       ),
     );
   }

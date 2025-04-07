@@ -1,0 +1,206 @@
+openapi: 3.0.3
+info:
+  title: Horoscope Guru
+  version: 1.0.0
+paths:
+  /auth/google:
+    get:
+      summary: Initiates Google OAuth authentication
+      operationId: initiateGoogleAuth
+      responses:
+        '200':
+          description: "GoogleAuthCallbackResponse"
+          
+  /auth/google/callback:
+    get:
+      summary: Google OAuth callback endpoint
+      operationId: googleAuthCallback
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: scope
+          in: query
+          required: true
+          allowReserved: true
+          schema:
+            type: string
+        - name: authuser
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: prompt  
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoogleAuthCallbackResponse'
+
+  /chat/start:
+    post:
+      security:
+        - bearerAuth: []
+      summary: Starts a chat and saves it to the db.
+      operationId: startChat
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartChatRequest'
+      responses:
+        '200':
+          description: "StartChatResponse"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StartChatResponse'
+
+  /chat:
+    post:
+      security:
+        - bearerAuth: []
+      summary: Sends a user message and retrieves the new assistant message.
+      operationId: chat
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostChatRequest'
+      responses:
+        '200':
+          description: "PostChatResponse"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostChatResponse'
+
+  /chat/{chatId}/generate/title:
+    get:
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: chatId
+          schema: 
+            type: string
+          required: true
+      responses:
+        '200':
+          description: "GenerateChatTitleResponse"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateChatTitleResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    GoogleAuthCallbackResponse:
+      type: object
+      required:
+        - token
+        - user
+      properties:
+        token:
+          type: string
+          description: JWT token for authentication
+        user:
+          $ref: '#/components/schemas/User'
+
+    GoogleAuthCallbackRequest:
+      type: object
+      required:
+        - user
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - name
+        - surname
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        surname:
+          type: string
+
+    PostChatRequest:
+      type: object
+      required:
+        - chatId
+        - message
+      properties:
+        chatId:
+          type: string
+        message:
+          type: string
+
+    PostChatResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          $ref: '#/components/schemas/ChatMessage'
+
+    GenerateChatTitleResponse:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+
+    StartChatRequest:
+      type: object
+
+    StartChatResponse:
+      type: object
+      required:
+        - chatId
+        - message
+      properties:
+        chatId:
+          type: string
+        message:
+          $ref: '#/components/schemas/ChatMessage'
+
+    ChatMessage:
+      type: object
+      required:
+        - role
+        - content
+      properties:
+        role:
+          $ref: '#/components/schemas/ChatMessageRole'
+        content:
+          type: string
+
+    ChatMessageRole:
+      type: string
+      enum:
+        - "assistant"
+        - "system"
+        - "user"
