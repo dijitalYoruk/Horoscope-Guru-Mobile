@@ -35,21 +35,25 @@ class ChatBubble extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment:
+            message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           if (!message.isUser)
             CircleAvatar(
-              radius: 14,
+              radius: 24,
               backgroundColor: Colors.deepPurple.shade500,
               backgroundImage: const AssetImage('assets/images/logo.png'),
             ),
           if (!message.isUser) const SizedBox(width: 8),
           Flexible(
             child: Column(
-              crossAxisAlignment: message.isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: message.isUser
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     color: message.isUser ? userBubbleColor : aiBubbleColor,
                     borderRadius: BorderRadius.only(
@@ -106,7 +110,8 @@ class _ChatScreenState extends State<ChatScreen> {
   final FocusNode _messageFocusNode = FocusNode();
   final List<ChatMessage> _messages = [
     ChatMessage(
-      text: "Hello! I'm your Horoscope Guru. To create your birth chart, I'll need some details about when and where you were born.",
+      text:
+          "Hello! I'm your Horoscope Guru. To create your birth chart, I'll need some details about when and where you were born.",
       isUser: false,
       time: "10:00 AM",
     ),
@@ -193,11 +198,13 @@ class _ChatScreenState extends State<ChatScreen> {
     _messageCount++;
 
     setState(() {
-      _messages.insert(0, ChatMessage(
-        text: text,
-        isUser: true,
-        time: _formatTime(DateTime.now()),
-      ));
+      _messages.insert(
+          0,
+          ChatMessage(
+            text: text,
+            isUser: true,
+            time: _formatTime(DateTime.now()),
+          ));
 
       Future.delayed(const Duration(milliseconds: 800), () {
         setState(() => _messages.insert(0, _getAIResponse(text)));
@@ -271,7 +278,8 @@ class _ChatScreenState extends State<ChatScreen> {
         isUser: false,
         time: _formatTime(DateTime.now()),
       );
-    } else if (_messages.any((msg) => msg.text.contains("where were you born"))) {
+    } else if (_messages
+        .any((msg) => msg.text.contains("where were you born"))) {
       return ChatMessage(
         text: "Perfect! I'm calculating your birth chart now...✨",
         isUser: false,
@@ -279,7 +287,8 @@ class _ChatScreenState extends State<ChatScreen> {
       );
     }
     return ChatMessage(
-      text: "Interesting! What else would you like to know about your horoscope?",
+      text:
+          "Interesting! What else would you like to know about your horoscope?",
       isUser: false,
       time: _formatTime(DateTime.now()),
     );
@@ -379,7 +388,7 @@ class _ChatScreenState extends State<ChatScreen> {
             Hero(
               tag: 'guru-avatar',
               child: CircleAvatar(
-                radius: 18,
+                radius: 24,
                 backgroundColor: Colors.deepPurple.shade500,
                 backgroundImage: const AssetImage('assets/images/logo.png'),
               ),
