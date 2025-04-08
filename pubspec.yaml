@@ -44,7 +44,8 @@ dependencies:
   google_sign_in: ^6.2.1
   shared_preferences: ^2.2.2
   emoji_picker_flutter: ^4.3.0
-  flutter_native_splash: 2.4.6
+  openapi:
+    path: ./openapi/client
 
 dev_dependencies:
   flutter_test:

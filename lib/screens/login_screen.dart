@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:openapi/openapi.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -40,7 +41,14 @@ class LoginPage extends StatelessWidget {
                 ),
               ),
               onPressed: () async {
-                Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+                final apiClient = Openapi(
+                    basePathOverride: "http://10.0.2.2:8080");
+                print(apiClient.dio.options.baseUrl );
+
+                final response = await apiClient.getDefaultApi().initiateGoogleAuth(); // or whatever your API class is
+                print(response);
+
+                // Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
               },
             ),
           ],
