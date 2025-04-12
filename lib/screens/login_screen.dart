@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:openapi/openapi.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -13,42 +14,61 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final GoogleSignIn _googleSignIn = GoogleSignIn(
-    clientId: "759644461132-brob7a6si7mjdvhqvud7irvo5miovkc1.apps.googleusercontent.com",
+    clientId:
+        "759644461132-brob7a6si7mjdvhqvud7irvo5miovkc1.apps.googleusercontent.com",
     scopes: [
       'email',
     ],
   );
 
+  @override
+  void initState() {
+    super.initState();
+    _checkExistingToken();
+  }
+
+  Future<void> _checkExistingToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('access_token');
+
+    if (accessToken != null && mounted) {
+      Navigator.pushReplacementNamed(context, '/home');
+    }
+  }
+
   Future<void> _handleSignIn() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        print('Google Sign-In was aborted by user');
+        return;
+      }
+
       final GoogleSignInAuthentication googleAuth =
-          await googleUser!.authentication;
-
-      // Google’dan gelen idToken ve accessToken
+          await googleUser.authentication;
       final idToken = googleAuth.idToken;
-      final accessToken = googleAuth.accessToken;
 
-
-      // idToken'ı backend'e gönder
-      print("-------------------------");
-      print(idToken);
-      print(accessToken);
-      print(googleUser.email);
-      print(googleUser.displayName);
-      print(googleUser);
-      print("-------------------------");
+      if (idToken == null) {
+        print('ID token is null');
+        return;
+      }
 
       // make a sign in request using open api by sending id token
       final dio = Dio(BaseOptions(baseUrl: 'http://10.0.2.2:8080'));
       final api = DefaultApi(dio, standardSerializers);
 
-      if (idToken != null) {
-        var resp = await api.googleAuthCallback(idToken: idToken);
-        print(resp.data);
-        
-      }
+      var resp = await api.googleAuthCallback(idToken: idToken);
 
+      if (resp.data != null) {
+        // Save the token to SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('access_token', resp.data!.token);
+
+        // Navigate to home screen
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+      }
     } catch (error) {
       print('Google Sign-In failed: $error');
     }
