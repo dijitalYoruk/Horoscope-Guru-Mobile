@@ -3,36 +3,13 @@ info:
   title: Horoscope Guru
   version: 1.0.0
 paths:
-  /auth/google:
-    get:
-      summary: Initiates Google OAuth authentication
-      operationId: initiateGoogleAuth
-      responses:
-        '200':
-          description: "GoogleAuthCallbackResponse"
-          
-  /auth/google/callback:
+         
+  /auth/google/sign-in:
     get:
       summary: Google OAuth callback endpoint
       operationId: googleAuthCallback
       parameters:
-        - name: code
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: scope
-          in: query
-          required: true
-          allowReserved: true
-          schema:
-            type: string
-        - name: authuser
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: prompt  
+        - name: idToken
           in: query
           required: true
           schema:

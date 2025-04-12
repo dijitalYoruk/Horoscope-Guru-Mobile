@@ -1,0 +1,1 @@
+openapi-generator generate -i openapi.yaml -g dart-dio -o client

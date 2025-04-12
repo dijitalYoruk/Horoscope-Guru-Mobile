@@ -210,10 +210,7 @@ class DefaultApi {
   /// 
   ///
   /// Parameters:
-  /// * [code] 
-  /// * [scope] 
-  /// * [authuser] 
-  /// * [prompt] 
+  /// * [idToken] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -224,10 +221,7 @@ class DefaultApi {
   /// Returns a [Future] containing a [Response] with a [GoogleAuthCallbackResponse] as data
   /// Throws [DioException] if API call or serialization fails
   Future<Response<GoogleAuthCallbackResponse>> googleAuthCallback({ 
-    required String code,
-    required String scope,
-    required String authuser,
-    required String prompt,
+    required String idToken,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -235,7 +229,7 @@ class DefaultApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/auth/google/callback';
+    final _path = r'/auth/google/sign-in';
     final _options = Options(
       method: r'GET',
       headers: <String, dynamic>{
@@ -249,10 +243,7 @@ class DefaultApi {
     );
 
     final _queryParameters = <String, dynamic>{
-      r'code': encodeQueryParameter(_serializers, code, const FullType(String)),
-      r'scope': encodeQueryParameter(_serializers, scope, const FullType(String)),
-      r'authuser': encodeQueryParameter(_serializers, authuser, const FullType(String)),
-      r'prompt': encodeQueryParameter(_serializers, prompt, const FullType(String)),
+      r'idToken': encodeQueryParameter(_serializers, idToken, const FullType(String)),
     };
 
     final _response = await _dio.request<Object>(
@@ -293,51 +284,6 @@ class DefaultApi {
       statusMessage: _response.statusMessage,
       extra: _response.extra,
     );
-  }
-
-  /// Initiates Google OAuth authentication
-  /// 
-  ///
-  /// Parameters:
-  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
-  /// * [headers] - Can be used to add additional headers to the request
-  /// * [extras] - Can be used to add flags to the request
-  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
-  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
-  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
-  ///
-  /// Returns a [Future]
-  /// Throws [DioException] if API call or serialization fails
-  Future<Response<void>> initiateGoogleAuth({ 
-    CancelToken? cancelToken,
-    Map<String, dynamic>? headers,
-    Map<String, dynamic>? extra,
-    ValidateStatus? validateStatus,
-    ProgressCallback? onSendProgress,
-    ProgressCallback? onReceiveProgress,
-  }) async {
-    final _path = r'/auth/google';
-    final _options = Options(
-      method: r'GET',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
-      extra: <String, dynamic>{
-        'secure': <Map<String, String>>[],
-        ...?extra,
-      },
-      validateStatus: validateStatus,
-    );
-
-    final _response = await _dio.request<Object>(
-      _path,
-      options: _options,
-      cancelToken: cancelToken,
-      onSendProgress: onSendProgress,
-      onReceiveProgress: onReceiveProgress,
-    );
-
-    return _response;
   }
 
   /// Starts a chat and saves it to the db.

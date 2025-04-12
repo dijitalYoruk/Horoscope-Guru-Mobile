@@ -11,8 +11,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**chat**](DefaultApi.md#chat) | **POST** /chat | Sends a user message and retrieves the new assistant message.
 [**chatChatIdGenerateTitleGet**](DefaultApi.md#chatchatidgeneratetitleget) | **GET** /chat/{chatId}/generate/title | 
-[**googleAuthCallback**](DefaultApi.md#googleauthcallback) | **GET** /auth/google/callback | Google OAuth callback endpoint
-[**initiateGoogleAuth**](DefaultApi.md#initiategoogleauth) | **GET** /auth/google | Initiates Google OAuth authentication
+[**googleAuthCallback**](DefaultApi.md#googleauthcallback) | **GET** /auth/google/sign-in | Google OAuth callback endpoint
 [**startChat**](DefaultApi.md#startchat) | **POST** /chat/start | Starts a chat and saves it to the db.
 
 
@@ -99,7 +98,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **googleAuthCallback**
-> GoogleAuthCallbackResponse googleAuthCallback(code, scope, authuser, prompt)
+> GoogleAuthCallbackResponse googleAuthCallback(idToken)
 
 Google OAuth callback endpoint
 
@@ -108,13 +107,10 @@ Google OAuth callback endpoint
 import 'package:openapi/api.dart';
 
 final api = Openapi().getDefaultApi();
-final String code = code_example; // String | 
-final String scope = scope_example; // String | 
-final String authuser = authuser_example; // String | 
-final String prompt = prompt_example; // String | 
+final String idToken = idToken_example; // String | 
 
 try {
-    final response = api.googleAuthCallback(code, scope, authuser, prompt);
+    final response = api.googleAuthCallback(idToken);
     print(response);
 } catch on DioException (e) {
     print('Exception when calling DefaultApi->googleAuthCallback: $e\n');
@@ -125,10 +121,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **code** | **String**|  | 
- **scope** | **String**|  | 
- **authuser** | **String**|  | 
- **prompt** | **String**|  | 
+ **idToken** | **String**|  | 
 
 ### Return type
 
@@ -142,42 +135,6 @@ No authorization required
 
  - **Content-Type**: Not defined
  - **Accept**: application/json
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **initiateGoogleAuth**
-> initiateGoogleAuth()
-
-Initiates Google OAuth authentication
-
-### Example
-```dart
-import 'package:openapi/api.dart';
-
-final api = Openapi().getDefaultApi();
-
-try {
-    api.initiateGoogleAuth();
-} catch on DioException (e) {
-    print('Exception when calling DefaultApi->initiateGoogleAuth: $e\n');
-}
-```
-
-### Parameters
-This endpoint does not need any parameter.
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

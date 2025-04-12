@@ -67,8 +67,7 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 [*DefaultApi*](doc/DefaultApi.md) | [**chat**](doc/DefaultApi.md#chat) | **POST** /chat | Sends a user message and retrieves the new assistant message.
 [*DefaultApi*](doc/DefaultApi.md) | [**chatChatIdGenerateTitleGet**](doc/DefaultApi.md#chatchatidgeneratetitleget) | **GET** /chat/{chatId}/generate/title | 
-[*DefaultApi*](doc/DefaultApi.md) | [**googleAuthCallback**](doc/DefaultApi.md#googleauthcallback) | **GET** /auth/google/callback | Google OAuth callback endpoint
-[*DefaultApi*](doc/DefaultApi.md) | [**initiateGoogleAuth**](doc/DefaultApi.md#initiategoogleauth) | **GET** /auth/google | Initiates Google OAuth authentication
+[*DefaultApi*](doc/DefaultApi.md) | [**googleAuthCallback**](doc/DefaultApi.md#googleauthcallback) | **GET** /auth/google/sign-in | Google OAuth callback endpoint
 [*DefaultApi*](doc/DefaultApi.md) | [**startChat**](doc/DefaultApi.md#startchat) | **POST** /chat/start | Starts a chat and saves it to the db.
 
 
