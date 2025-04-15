@@ -3,104 +3,54 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:built_value/built_value.dart';
-import 'package:built_value/serializer.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 part 'generate_chat_title_response.g.dart';
 
-/// GenerateChatTitleResponse
-///
-/// Properties:
-/// * [title] 
-@BuiltValue()
-abstract class GenerateChatTitleResponse implements Built<GenerateChatTitleResponse, GenerateChatTitleResponseBuilder> {
-  @BuiltValueField(wireName: r'title')
-  String get title;
 
-  GenerateChatTitleResponse._();
+@JsonSerializable(
+  checked: true,
+  createToJson: true,
+  disallowUnrecognizedKeys: false,
+  explicitToJson: true,
+)
+class GenerateChatTitleResponse {
+  /// Returns a new [GenerateChatTitleResponse] instance.
+  GenerateChatTitleResponse({
 
-  factory GenerateChatTitleResponse([void updates(GenerateChatTitleResponseBuilder b)]) = _$GenerateChatTitleResponse;
+    required  this.title,
+  });
 
-  @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(GenerateChatTitleResponseBuilder b) => b;
+  @JsonKey(
+    
+    name: r'title',
+    required: true,
+    includeIfNull: false,
+  )
 
-  @BuiltValueSerializer(custom: true)
-  static Serializer<GenerateChatTitleResponse> get serializer => _$GenerateChatTitleResponseSerializer();
-}
 
-class _$GenerateChatTitleResponseSerializer implements PrimitiveSerializer<GenerateChatTitleResponse> {
-  @override
-  final Iterable<Type> types = const [GenerateChatTitleResponse, _$GenerateChatTitleResponse];
+  final String title;
 
-  @override
-  final String wireName = r'GenerateChatTitleResponse';
 
-  Iterable<Object?> _serializeProperties(
-    Serializers serializers,
-    GenerateChatTitleResponse object, {
-    FullType specifiedType = FullType.unspecified,
-  }) sync* {
-    yield r'title';
-    yield serializers.serialize(
-      object.title,
-      specifiedType: const FullType(String),
-    );
-  }
 
-  @override
-  Object serialize(
-    Serializers serializers,
-    GenerateChatTitleResponse object, {
-    FullType specifiedType = FullType.unspecified,
-  }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
-  }
 
-  void _deserializeProperties(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-    required List<Object?> serializedList,
-    required GenerateChatTitleResponseBuilder result,
-    required List<Object?> unhandled,
-  }) {
-    for (var i = 0; i < serializedList.length; i += 2) {
-      final key = serializedList[i] as String;
-      final value = serializedList[i + 1];
-      switch (key) {
-        case r'title':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
-          result.title = valueDes;
-          break;
-        default:
-          unhandled.add(key);
-          unhandled.add(value);
-          break;
-      }
-    }
-  }
+
+    @override
+    bool operator ==(Object other) => identical(this, other) || other is GenerateChatTitleResponse &&
+      other.title == title;
+
+    @override
+    int get hashCode =>
+        title.hashCode;
+
+  factory GenerateChatTitleResponse.fromJson(Map<String, dynamic> json) => _$GenerateChatTitleResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$GenerateChatTitleResponseToJson(this);
 
   @override
-  GenerateChatTitleResponse deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) {
-    final result = GenerateChatTitleResponseBuilder();
-    final serializedList = (serialized as Iterable<Object?>).toList();
-    final unhandled = <Object?>[];
-    _deserializeProperties(
-      serializers,
-      serialized,
-      specifiedType: specifiedType,
-      serializedList: serializedList,
-      unhandled: unhandled,
-      result: result,
-    );
-    return result.build();
+  String toString() {
+    return toJson().toString();
   }
+
 }
 

@@ -3,34 +3,21 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:built_collection/built_collection.dart';
-import 'package:built_value/built_value.dart';
-import 'package:built_value/serializer.dart';
+import 'package:json_annotation/json_annotation.dart';
 
-part 'chat_message_role.g.dart';
 
-class ChatMessageRole extends EnumClass {
+enum ChatMessageRole {
+      @JsonValue(r'assistant')
+      assistant(r'assistant'),
+      @JsonValue(r'system')
+      system(r'system'),
+      @JsonValue(r'user')
+      user(r'user');
 
-  @BuiltValueEnumConst(wireName: r'assistant')
-  static const ChatMessageRole assistant = _$assistant;
-  @BuiltValueEnumConst(wireName: r'system')
-  static const ChatMessageRole system = _$system;
-  @BuiltValueEnumConst(wireName: r'user')
-  static const ChatMessageRole user = _$user;
+  const ChatMessageRole(this.value);
 
-  static Serializer<ChatMessageRole> get serializer => _$chatMessageRoleSerializer;
+  final String value;
 
-  const ChatMessageRole._(String name): super(name);
-
-  static BuiltSet<ChatMessageRole> get values => _$values;
-  static ChatMessageRole valueOf(String name) => _$valueOf(name);
+  @override
+  String toString() => value;
 }
-
-/// Optionally, enum_class can generate a mixin to go with your enum for use
-/// with Angular. It exposes your enum constants as getters. So, if you mix it
-/// in to your Dart component class, the values become available to the
-/// corresponding Angular template.
-///
-/// Trigger mixin generation by writing a line like this one next to your enum.
-abstract class ChatMessageRoleMixin = Object with _$ChatMessageRoleMixin;
-

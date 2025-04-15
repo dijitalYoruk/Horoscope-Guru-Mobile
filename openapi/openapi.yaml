@@ -3,11 +3,11 @@ info:
   title: Horoscope Guru
   version: 1.0.0
 paths:
-         
+
   /auth/google/sign-in:
     get:
       summary: Google OAuth callback endpoint
-      operationId: googleAuthCallback
+      operationId: signInGoogle
       parameters:
         - name: idToken
           in: query
@@ -20,7 +20,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GoogleAuthCallbackResponse'
+                $ref: '#/components/schemas/GoogleSignInResponse'
 
   /chat/start:
     post:
@@ -46,7 +46,7 @@ paths:
       security:
         - bearerAuth: []
       summary: Sends a user message and retrieves the new assistant message.
-      operationId: chat
+      operationId: sendMessageToChat
       requestBody:
         content:
           application/json:
@@ -67,7 +67,7 @@ paths:
       parameters:
         - in: path
           name: chatId
-          schema: 
+          schema:
             type: string
           required: true
       responses:
@@ -86,7 +86,7 @@ components:
       bearerFormat: JWT
 
   schemas:
-    GoogleAuthCallbackResponse:
+    GoogleSignInResponse:
       type: object
       required:
         - token
@@ -98,13 +98,13 @@ components:
         user:
           $ref: '#/components/schemas/User'
 
-    GoogleAuthCallbackRequest:
+    GoogleSignInRequest:
       type: object
       required:
-        - user
+        - idToken
       properties:
-        user:
-          $ref: '#/components/schemas/User'
+        idToken:
+          type: string
 
     User:
       type: object
@@ -126,9 +126,12 @@ components:
     PostChatRequest:
       type: object
       required:
-        - chatId
         - message
       properties:
+        initialMessage:
+          allOf:
+           - $ref: '#/components/schemas/ChatMessage'
+          nullable: true
         chatId:
           type: string
         message:
@@ -137,8 +140,11 @@ components:
     PostChatResponse:
       type: object
       required:
+        - chatId
         - message
       properties:
+        chatId:
+          type: string
         message:
           $ref: '#/components/schemas/ChatMessage'
 
@@ -159,8 +165,6 @@ components:
         - chatId
         - message
       properties:
-        chatId:
-          type: string
         message:
           $ref: '#/components/schemas/ChatMessage'
 
@@ -169,11 +173,15 @@ components:
       required:
         - role
         - content
+        - updatedAt
       properties:
         role:
           $ref: '#/components/schemas/ChatMessageRole'
         content:
           type: string
+        updatedAt:
+          type: string
+          format: date-time
 
     ChatMessageRole:
       type: string

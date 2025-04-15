@@ -17,5 +17,10 @@ void main() {
       // TODO
     });
 
+    // DateTime updatedAt
+    test('to test the property `updatedAt`', () async {
+      // TODO
+    });
+
   });
 }

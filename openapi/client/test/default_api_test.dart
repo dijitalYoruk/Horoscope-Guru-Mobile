@@ -7,29 +7,22 @@ void main() {
   final instance = Openapi().getDefaultApi();
 
   group(DefaultApi, () {
-    // Sends a user message and retrieves the new assistant message.
-    //
-    //Future<PostChatResponse> chat({ PostChatRequest postChatRequest }) async
-    test('test chat', () async {
-      // TODO
-    });
-
     //Future<GenerateChatTitleResponse> chatChatIdGenerateTitleGet(String chatId) async
     test('test chatChatIdGenerateTitleGet', () async {
       // TODO
     });
 
-    // Google OAuth callback endpoint
+    // Sends a user message and retrieves the new assistant message.
     //
-    //Future<GoogleAuthCallbackResponse> googleAuthCallback(String code, String scope, String authuser, String prompt) async
-    test('test googleAuthCallback', () async {
+    //Future<PostChatResponse> sendMessageToChat({ PostChatRequest postChatRequest }) async
+    test('test sendMessageToChat', () async {
       // TODO
     });
 
-    // Initiates Google OAuth authentication
+    // Google OAuth callback endpoint
     //
-    //Future initiateGoogleAuth() async
-    test('test initiateGoogleAuth', () async {
+    //Future<GoogleSignInResponse> signInGoogle(String idToken) async
+    test('test signInGoogle', () async {
       // TODO
     });
 

@@ -1,12 +1,12 @@
 import 'package:test/test.dart';
 import 'package:openapi/openapi.dart';
 
-// tests for GoogleAuthCallbackResponse
+// tests for GoogleSignInResponse
 void main() {
-  final instance = GoogleAuthCallbackResponseBuilder();
+  final instance = GoogleSignInResponseBuilder();
   // TODO add properties to the builder and call build()
 
-  group(GoogleAuthCallbackResponse, () {
+  group(GoogleSignInResponse, () {
     // JWT token for authentication
     // String token
     test('to test the property `token`', () async {

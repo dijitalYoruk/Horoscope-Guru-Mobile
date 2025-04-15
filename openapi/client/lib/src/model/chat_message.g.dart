@@ -3,106 +3,37 @@
 part of 'chat_message.dart';
 
 // **************************************************************************
-// BuiltValueGenerator
+// JsonSerializableGenerator
 // **************************************************************************
 
-class _$ChatMessage extends ChatMessage {
-  @override
-  final ChatMessageRole role;
-  @override
-  final String content;
-
-  factory _$ChatMessage([void Function(ChatMessageBuilder)? updates]) =>
-      (new ChatMessageBuilder()..update(updates))._build();
-
-  _$ChatMessage._({required this.role, required this.content}) : super._() {
-    BuiltValueNullFieldError.checkNotNull(role, r'ChatMessage', 'role');
-    BuiltValueNullFieldError.checkNotNull(content, r'ChatMessage', 'content');
-  }
-
-  @override
-  ChatMessage rebuild(void Function(ChatMessageBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
-
-  @override
-  ChatMessageBuilder toBuilder() => new ChatMessageBuilder()..replace(this);
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(other, this)) return true;
-    return other is ChatMessage &&
-        role == other.role &&
-        content == other.content;
-  }
-
-  @override
-  int get hashCode {
-    var _$hash = 0;
-    _$hash = $jc(_$hash, role.hashCode);
-    _$hash = $jc(_$hash, content.hashCode);
-    _$hash = $jf(_$hash);
-    return _$hash;
-  }
-
-  @override
-  String toString() {
-    return (newBuiltValueToStringHelper(r'ChatMessage')
-          ..add('role', role)
-          ..add('content', content))
-        .toString();
-  }
-}
-
-class ChatMessageBuilder implements Builder<ChatMessage, ChatMessageBuilder> {
-  _$ChatMessage? _$v;
-
-  ChatMessageRole? _role;
-  ChatMessageRole? get role => _$this._role;
-  set role(ChatMessageRole? role) => _$this._role = role;
-
-  String? _content;
-  String? get content => _$this._content;
-  set content(String? content) => _$this._content = content;
-
-  ChatMessageBuilder() {
-    ChatMessage._defaults(this);
-  }
-
-  ChatMessageBuilder get _$this {
-    final $v = _$v;
-    if ($v != null) {
-      _role = $v.role;
-      _content = $v.content;
-      _$v = null;
-    }
-    return this;
-  }
-
-  @override
-  void replace(ChatMessage other) {
-    ArgumentError.checkNotNull(other, 'other');
-    _$v = other as _$ChatMessage;
-  }
-
-  @override
-  void update(void Function(ChatMessageBuilder)? updates) {
-    if (updates != null) updates(this);
-  }
-
-  @override
-  ChatMessage build() => _build();
-
-  _$ChatMessage _build() {
-    final _$result = _$v ??
-        new _$ChatMessage._(
-          role: BuiltValueNullFieldError.checkNotNull(
-              role, r'ChatMessage', 'role'),
-          content: BuiltValueNullFieldError.checkNotNull(
-              content, r'ChatMessage', 'content'),
+ChatMessage _$ChatMessageFromJson(Map<String, dynamic> json) => $checkedCreate(
+      'ChatMessage',
+      json,
+      ($checkedConvert) {
+        $checkKeys(
+          json,
+          requiredKeys: const ['role', 'content', 'updatedAt'],
         );
-    replace(_$result);
-    return _$result;
-  }
-}
+        final val = ChatMessage(
+          role: $checkedConvert(
+              'role', (v) => $enumDecode(_$ChatMessageRoleEnumMap, v)),
+          content: $checkedConvert('content', (v) => v as String),
+          updatedAt:
+              $checkedConvert('updatedAt', (v) => DateTime.parse(v as String)),
+        );
+        return val;
+      },
+    );
 
-// ignore_for_file: deprecated_member_use_from_same_package,type=lint
+Map<String, dynamic> _$ChatMessageToJson(ChatMessage instance) =>
+    <String, dynamic>{
+      'role': _$ChatMessageRoleEnumMap[instance.role]!,
+      'content': instance.content,
+      'updatedAt': instance.updatedAt.toIso8601String(),
+    };
+
+const _$ChatMessageRoleEnumMap = {
+  ChatMessageRole.assistant: 'assistant',
+  ChatMessageRole.system: 'system',
+  ChatMessageRole.user: 'user',
+};

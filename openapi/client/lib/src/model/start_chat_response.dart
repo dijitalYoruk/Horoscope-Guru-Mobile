@@ -4,120 +4,54 @@
 
 // ignore_for_file: unused_element
 import 'package:openapi/src/model/chat_message.dart';
-import 'package:built_value/built_value.dart';
-import 'package:built_value/serializer.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 part 'start_chat_response.g.dart';
 
-/// StartChatResponse
-///
-/// Properties:
-/// * [chatId] 
-/// * [message] 
-@BuiltValue()
-abstract class StartChatResponse implements Built<StartChatResponse, StartChatResponseBuilder> {
-  @BuiltValueField(wireName: r'chatId')
-  String get chatId;
 
-  @BuiltValueField(wireName: r'message')
-  ChatMessage get message;
+@JsonSerializable(
+  checked: true,
+  createToJson: true,
+  disallowUnrecognizedKeys: false,
+  explicitToJson: true,
+)
+class StartChatResponse {
+  /// Returns a new [StartChatResponse] instance.
+  StartChatResponse({
 
-  StartChatResponse._();
+    required  this.message,
+  });
 
-  factory StartChatResponse([void updates(StartChatResponseBuilder b)]) = _$StartChatResponse;
+  @JsonKey(
+    
+    name: r'message',
+    required: true,
+    includeIfNull: false,
+  )
 
-  @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(StartChatResponseBuilder b) => b;
 
-  @BuiltValueSerializer(custom: true)
-  static Serializer<StartChatResponse> get serializer => _$StartChatResponseSerializer();
-}
+  final ChatMessage message;
 
-class _$StartChatResponseSerializer implements PrimitiveSerializer<StartChatResponse> {
-  @override
-  final Iterable<Type> types = const [StartChatResponse, _$StartChatResponse];
 
-  @override
-  final String wireName = r'StartChatResponse';
 
-  Iterable<Object?> _serializeProperties(
-    Serializers serializers,
-    StartChatResponse object, {
-    FullType specifiedType = FullType.unspecified,
-  }) sync* {
-    yield r'chatId';
-    yield serializers.serialize(
-      object.chatId,
-      specifiedType: const FullType(String),
-    );
-    yield r'message';
-    yield serializers.serialize(
-      object.message,
-      specifiedType: const FullType(ChatMessage),
-    );
-  }
+
+
+    @override
+    bool operator ==(Object other) => identical(this, other) || other is StartChatResponse &&
+      other.message == message;
+
+    @override
+    int get hashCode =>
+        message.hashCode;
+
+  factory StartChatResponse.fromJson(Map<String, dynamic> json) => _$StartChatResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$StartChatResponseToJson(this);
 
   @override
-  Object serialize(
-    Serializers serializers,
-    StartChatResponse object, {
-    FullType specifiedType = FullType.unspecified,
-  }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+  String toString() {
+    return toJson().toString();
   }
 
-  void _deserializeProperties(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-    required List<Object?> serializedList,
-    required StartChatResponseBuilder result,
-    required List<Object?> unhandled,
-  }) {
-    for (var i = 0; i < serializedList.length; i += 2) {
-      final key = serializedList[i] as String;
-      final value = serializedList[i + 1];
-      switch (key) {
-        case r'chatId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
-          result.chatId = valueDes;
-          break;
-        case r'message':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(ChatMessage),
-          ) as ChatMessage;
-          result.message.replace(valueDes);
-          break;
-        default:
-          unhandled.add(key);
-          unhandled.add(value);
-          break;
-      }
-    }
-  }
-
-  @override
-  StartChatResponse deserialize(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-  }) {
-    final result = StartChatResponseBuilder();
-    final serializedList = (serialized as Iterable<Object?>).toList();
-    final unhandled = <Object?>[];
-    _deserializeProperties(
-      serializers,
-      serialized,
-      specifiedType: specifiedType,
-      serializedList: serializedList,
-      unhandled: unhandled,
-      result: result,
-    );
-    return result.build();
-  }
 }
 

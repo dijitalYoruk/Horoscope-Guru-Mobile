@@ -17,8 +17,8 @@ import 'package:openapi/src/model/date.dart';
 import 'package:openapi/src/model/chat_message.dart';
 import 'package:openapi/src/model/chat_message_role.dart';
 import 'package:openapi/src/model/generate_chat_title_response.dart';
-import 'package:openapi/src/model/google_auth_callback_request.dart';
-import 'package:openapi/src/model/google_auth_callback_response.dart';
+import 'package:openapi/src/model/google_sign_in_request.dart';
+import 'package:openapi/src/model/google_sign_in_response.dart';
 import 'package:openapi/src/model/post_chat_request.dart';
 import 'package:openapi/src/model/post_chat_response.dart';
 import 'package:openapi/src/model/start_chat_response.dart';
@@ -30,8 +30,8 @@ part 'serializers.g.dart';
   ChatMessage,
   ChatMessageRole,
   GenerateChatTitleResponse,
-  GoogleAuthCallbackRequest,
-  GoogleAuthCallbackResponse,
+  GoogleSignInRequest,
+  GoogleSignInResponse,
   PostChatRequest,
   PostChatResponse,
   StartChatResponse,

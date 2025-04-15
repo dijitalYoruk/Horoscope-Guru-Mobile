@@ -55,9 +55,9 @@ class _LoginPageState extends State<LoginPage> {
 
       // make a sign in request using open api by sending id token
       final dio = Dio(BaseOptions(baseUrl: 'http://10.0.2.2:8080'));
-      final api = DefaultApi(dio, standardSerializers);
+      final api = DefaultApi(dio);
 
-      var resp = await api.googleAuthCallback(idToken: idToken);
+      var resp = await api.signInGoogle(idToken: idToken);
 
       if (resp.data != null) {
         // Save the token to SharedPreferences

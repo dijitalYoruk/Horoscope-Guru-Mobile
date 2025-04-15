@@ -1,24 +1,12 @@
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:openapi/openapi.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/rendering.dart';
-
-class ChatMessage {
-  final String text;
-  final bool isUser;
-  final String time;
-  final bool isAd;
-
-  ChatMessage({
-    required this.text,
-    required this.isUser,
-    required this.time,
-    this.isAd = false,
-  });
-}
 
 class ChatBubble extends StatelessWidget {
   final ChatMessage message;
@@ -40,18 +28,18 @@ class ChatBubble extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment:
-            message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+            message.role == ChatMessageRole.user ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
-          if (!message.isUser)
+          if (message.role == ChatMessageRole.assistant)
             CircleAvatar(
               radius: 24,
               backgroundColor: Colors.deepPurple.shade500,
               backgroundImage: const AssetImage('assets/images/logo.png'),
             ),
-          if (!message.isUser) const SizedBox(width: 8),
+          if (message.role == ChatMessageRole.assistant) const SizedBox(width: 8),
           Flexible(
             child: Column(
-              crossAxisAlignment: message.isUser
+              crossAxisAlignment: message.role == ChatMessageRole.user
                   ? CrossAxisAlignment.end
                   : CrossAxisAlignment.start,
               children: [
@@ -59,10 +47,10 @@ class ChatBubble extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: message.isUser ? userBubbleColor : aiBubbleColor,
+                    color: message.role == ChatMessageRole.user ? userBubbleColor : aiBubbleColor,
                     borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(message.isUser ? 18 : 0),
-                      topRight: Radius.circular(message.isUser ? 0 : 18),
+                      topLeft: Radius.circular(message.role == ChatMessageRole.user ? 18 : 0),
+                      topRight: Radius.circular(message.role == ChatMessageRole.user ? 0 : 18),
                       bottomLeft: const Radius.circular(18),
                       bottomRight: const Radius.circular(18),
                     ),
@@ -75,7 +63,7 @@ class ChatBubble extends StatelessWidget {
                     ],
                   ),
                   child: Text(
-                    message.text,
+                    message.content,
                     style: TextStyle(
                       color: textColor,
                       fontSize: 15,
@@ -86,7 +74,7 @@ class ChatBubble extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
-                    message.time,
+                    message.updatedAt.toString(),
                     style: TextStyle(
                       color: Colors.grey.shade400,
                       fontSize: 10,
@@ -116,19 +104,9 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final FocusNode _messageFocusNode = FocusNode();
-  final List<ChatMessage> _messages = [
-    ChatMessage(
-      text:
-          "Hello! I'm your Horoscope Guru. To create your birth chart, I'll need some details about when and where you were born.",
-      isUser: false,
-      time: "10:00 AM",
-    ),
-    ChatMessage(
-      text: "First, what is your date of birth? (DD/MM/YYYY)",
-      isUser: false,
-      time: "10:00 AM",
-    ),
-  ];
+
+
+  final List<ChatMessage> _messages = [];
 
   RewardedAd? _rewardedAd;
   int _messageCount = 0;
@@ -150,6 +128,8 @@ class _ChatScreenState extends State<ChatScreen> {
     _messageController.addListener(() {
       // Remove the auto-close behavior when text changes
     });
+
+    _startNewChat();
   }
 
   Future<void> _loadMessageCount() async {
@@ -227,15 +207,13 @@ class _ChatScreenState extends State<ChatScreen> {
       _messages.insert(
           0,
           ChatMessage(
-            text: text,
-            isUser: true,
-            time: _formatTime(DateTime.now()),
+            content: text,
+            role: ChatMessageRole.user,
+            updatedAt: DateTime.now()
           ));
-
-      Future.delayed(const Duration(milliseconds: 800), () {
-        setState(() => _messages.insert(0, _getAIResponse(text)));
-      });
     });
+
+    _sendMessage();
   }
 
   void _showRewardedAdDialog() {
@@ -295,29 +273,6 @@ class _ChatScreenState extends State<ChatScreen> {
     } else {
       _loadRewardedAd();
     }
-  }
-
-  ChatMessage _getAIResponse(String userMessage) {
-    if (_messages.any((msg) => msg.text.contains("date of birth"))) {
-      return ChatMessage(
-        text: "Thank you! Now, where were you born? (City, Country)",
-        isUser: false,
-        time: _formatTime(DateTime.now()),
-      );
-    } else if (_messages
-        .any((msg) => msg.text.contains("where were you born"))) {
-      return ChatMessage(
-        text: "Perfect! I'm calculating your birth chart now...✨",
-        isUser: false,
-        time: _formatTime(DateTime.now()),
-      );
-    }
-    return ChatMessage(
-      text:
-          "Interesting! What else would you like to know about your horoscope?",
-      isUser: false,
-      time: _formatTime(DateTime.now()),
-    );
   }
 
   String _formatTime(DateTime time) {
@@ -479,6 +434,94 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
       ],
     );
+  }
+
+  var _chatId = "";
+  var _isLoading = false;
+
+  Future<void> _startNewChat() async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token');
+
+      if (accessToken == null) {
+        return;
+      }
+
+      final dio = Dio(BaseOptions(
+        baseUrl: 'http://10.0.2.2:8080',
+      ));
+
+      final api = DefaultApi(dio);
+      print( 'Bearer $accessToken');
+      final response = await api.startChat(headers: {
+        'Authorization': 'Bearer $accessToken',
+      },);
+
+      if (response.data != null) {
+        var data = response.data!;
+        setState(() {
+          _messages.add(data.message);
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      print('Error starting chat: $e');
+    }
+  }
+
+  Future<void> _sendMessage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token');
+
+      if (accessToken == null) {
+        return;
+      }
+
+      final dio = Dio(BaseOptions(
+        baseUrl: 'http://10.0.2.2:8080',
+      ));
+
+      final api = DefaultApi(dio);
+
+      final request = PostChatRequest(
+          chatId: _chatId,
+          message: _messages.first.content,
+          initialMessage: _messages.last,
+      );
+
+      final response = await api.sendMessageToChat(postChatRequest: request, headers: {
+        'Authorization': 'Bearer $accessToken',
+      },);
+
+      if (response.data != null) {
+        setState(() {
+          _messages.insert(0, ChatMessage(
+            content: response.data!.message.content,
+            role: response.data!.message.role,
+            updatedAt: response.data!.message.updatedAt,
+          ));
+          _chatId = response.data!.chatId;
+          _isLoading = false;
+          _messageCount++;
+          _saveMessageCount(_messageCount);
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      print('Error sending message: $e');
+    }
   }
 
   @override

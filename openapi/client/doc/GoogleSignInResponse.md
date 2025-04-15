@@ -1,4 +1,4 @@
-# openapi.model.GoogleAuthCallbackResponse
+# openapi.model.GoogleSignInResponse
 
 ## Load the model package
 ```dart
