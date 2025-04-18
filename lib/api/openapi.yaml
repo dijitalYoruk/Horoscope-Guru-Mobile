@@ -162,7 +162,6 @@ components:
     StartChatResponse:
       type: object
       required:
-        - chatId
         - message
       properties:
         message:

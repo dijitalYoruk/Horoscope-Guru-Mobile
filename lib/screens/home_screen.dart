@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
+import 'package:horoscopeguruapp/api/api.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -30,39 +33,33 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   // Expanded Chat History Data (20 items)
-  final List<Map<String, String>> _chatHistory = List.generate(20, (index) {
-    final days = ['Today', 'Yesterday', 'Mar 12', 'Mar 11', 'Mar 10'];
-    final times = ['3:42 PM', '11:15 AM', '2:30 PM', '9:45 AM', '5:20 PM'];
-    final questions = [
-      'Will I ever be rich?',
-      'Does my cat hate me?',
-      'Why is my plant dying?',
-      'Is my ex thinking about me?',
-      'Should I quit my job?',
-      'Will I win the lottery?',
-      'Why do I keep seeing 11:11?',
-      'Is Mercury in retrograde?',
-      'What does my dream mean?',
-      'When will I find love?'
-    ];
-
-    return {
-      'title': questions[index % questions.length],
-      'date': '${days[index % days.length]} ${times[index % times.length]}'
-    };
-  });
+  List<Chat> _chatHistory = [];
 
   @override
   void initState() {
     super.initState();
     _funnyAstroQuote = _astroQuotes[Random().nextInt(_astroQuotes.length)];
+    getUserChats();
+  }
+
+  Future<void> getUserChats() async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('access_token');
+
+    if (accessToken == null) {
+      return;
+    }
+
+    var api = Api();
+    var response = await api.getAllUserChats(accessToken);
+
+    setState(() {
+      _chatHistory = response.chats;
+    });
   }
 
   Widget _buildDailyLaughterCard() {
-    final accentColor = Colors.deepOrange;
-    final cardColor = Color(0xFF1E1E1E);
     final textColor = Colors.white;
-    final secondaryTextColor = Colors.grey[400];
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20),
@@ -126,11 +123,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildChatHistorySection() {
-    final primaryColor = Colors.deepPurple.shade800;
-    final cardColor = Color(0xFF1E1E1E);
     final textColor = Colors.white;
     final secondaryTextColor = Colors.grey[400];
-    final accentColor = Colors.deepOrange;
 
     return Expanded(
       child: Container(
@@ -186,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         vertical: 4,
                       ),
                       title: Text(
-                        chat['title']!,
+                        chat.chatTitle!,
                         style: TextStyle(
                           color: textColor,
                           fontSize: 16,
@@ -194,7 +188,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       trailing: Text(
-                        chat['date']!,
+                        chat.updatedAt.toUtc().toString(),
                         style: TextStyle(
                           color: secondaryTextColor,
                           fontSize: 12,

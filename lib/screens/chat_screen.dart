@@ -3,10 +3,11 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:openapi/openapi.dart';
+import 'package:horoscopeguruapp/api/api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/rendering.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class ChatBubble extends StatelessWidget {
   final ChatMessage message;
@@ -74,10 +75,10 @@ class ChatBubble extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
-                    message.updatedAt.toString(),
+                    timeago.format(message.updatedAt),
                     style: TextStyle(
                       color: Colors.grey.shade400,
-                      fontSize: 10,
+                      fontSize: 12,
                     ),
                   ),
                 ),
@@ -436,7 +437,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  var _chatId = "";
+  String? _chatId = "";
   var _isLoading = false;
 
   Future<void> _startNewChat() async {
@@ -457,19 +458,14 @@ class _ChatScreenState extends State<ChatScreen> {
         baseUrl: 'http://10.0.2.2:8080',
       ));
 
-      final api = DefaultApi(dio);
-      print( 'Bearer $accessToken');
-      final response = await api.startChat(headers: {
-        'Authorization': 'Bearer $accessToken',
-      },);
+      final api = Api();
+      final response = await api.startChat(accessToken);
 
-      if (response.data != null) {
-        var data = response.data!;
-        setState(() {
-          _messages.add(data.message);
-          _isLoading = false;
-        });
-      }
+      setState(() {
+        _messages.add(response.message);
+        _isLoading = false;
+      });
+
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -491,7 +487,7 @@ class _ChatScreenState extends State<ChatScreen> {
         baseUrl: 'http://10.0.2.2:8080',
       ));
 
-      final api = DefaultApi(dio);
+      final api = Api();
 
       final request = PostChatRequest(
           chatId: _chatId,
@@ -499,23 +495,20 @@ class _ChatScreenState extends State<ChatScreen> {
           initialMessage: _messages.last,
       );
 
-      final response = await api.sendMessageToChat(postChatRequest: request, headers: {
-        'Authorization': 'Bearer $accessToken',
-      },);
+      final response = await api.sendMessageToChat(accessToken, request);
 
-      if (response.data != null) {
         setState(() {
           _messages.insert(0, ChatMessage(
-            content: response.data!.message.content,
-            role: response.data!.message.role,
-            updatedAt: response.data!.message.updatedAt,
+            content: response.message.content,
+            role: response.message.role,
+            updatedAt: response.message.updatedAt,
           ));
-          _chatId = response.data!.chatId;
+          _chatId = response.chatId;
           _isLoading = false;
           _messageCount++;
           _saveMessageCount(_messageCount);
         });
-      }
+
     } catch (e) {
       setState(() {
         _isLoading = false;

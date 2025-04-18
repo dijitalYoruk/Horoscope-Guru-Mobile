@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:openapi/openapi.dart';
+import 'package:horoscopeguruapp/api/api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
@@ -54,21 +54,19 @@ class _LoginPageState extends State<LoginPage> {
       }
 
       // make a sign in request using open api by sending id token
-      final dio = Dio(BaseOptions(baseUrl: 'http://10.0.2.2:8080'));
-      final api = DefaultApi(dio);
+      final api = Api();
 
-      var resp = await api.signInGoogle(idToken: idToken);
+      var resp = await api.signInWithGoogle(idToken);
 
-      if (resp.data != null) {
-        // Save the token to SharedPreferences
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('access_token', resp.data!.token);
+      // Save the token to SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('access_token', resp.token);
 
-        // Navigate to home screen
-        if (mounted) {
-          Navigator.pushReplacementNamed(context, '/home');
-        }
+      // Navigate to home screen
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/home');
       }
+
     } catch (error) {
       print('Google Sign-In failed: $error');
     }
