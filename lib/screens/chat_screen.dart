@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/rendering.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:horoscopeguruapp/theme/colors.dart';
 
 class ChatBubble extends StatelessWidget {
   final ChatMessage message;
@@ -28,16 +29,18 @@ class ChatBubble extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment:
-            message.role == ChatMessageRole.user ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: message.role == ChatMessageRole.user
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         children: [
           if (message.role == ChatMessageRole.assistant)
             CircleAvatar(
-              radius: 24,
+              radius: 28,
               backgroundColor: Colors.deepPurple.shade500,
               backgroundImage: const AssetImage('assets/images/logo.png'),
             ),
-          if (message.role == ChatMessageRole.assistant) const SizedBox(width: 8),
+          if (message.role == ChatMessageRole.assistant)
+            const SizedBox(width: 8),
           Flexible(
             child: Column(
               crossAxisAlignment: message.role == ChatMessageRole.user
@@ -48,10 +51,14 @@ class ChatBubble extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: message.role == ChatMessageRole.user ? userBubbleColor : aiBubbleColor,
+                    color: message.role == ChatMessageRole.user
+                        ? userBubbleColor
+                        : aiBubbleColor,
                     borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(message.role == ChatMessageRole.user ? 18 : 0),
-                      topRight: Radius.circular(message.role == ChatMessageRole.user ? 0 : 18),
+                      topLeft: Radius.circular(
+                          message.role == ChatMessageRole.user ? 18 : 0),
+                      topRight: Radius.circular(
+                          message.role == ChatMessageRole.user ? 0 : 18),
                       bottomLeft: const Radius.circular(18),
                       bottomRight: const Radius.circular(18),
                     ),
@@ -105,7 +112,6 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final FocusNode _messageFocusNode = FocusNode();
-
 
   final List<ChatMessage> _messages = [];
 
@@ -208,10 +214,9 @@ class _ChatScreenState extends State<ChatScreen> {
       _messages.insert(
           0,
           ChatMessage(
-            content: text,
-            role: ChatMessageRole.user,
-            updatedAt: DateTime.now()
-          ));
+              content: text,
+              role: ChatMessageRole.user,
+              updatedAt: DateTime.now()));
     });
 
     _sendMessage();
@@ -284,28 +289,20 @@ class _ChatScreenState extends State<ChatScreen> {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
           decoration: BoxDecoration(
-            color: Colors.deepPurple.shade800,
+            color: AppColors.primaryDarkE,
             borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(0),
               bottomRight: Radius.circular(0),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 8,
-                offset: const Offset(0, -2),
-              ),
-            ],
           ),
           child: Row(
             children: [
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.deepPurple.shade700,
-                    borderRadius: BorderRadius.circular(0),
+                    color: AppColors.primaryDark,
                   ),
                   child: Row(
                     children: [
@@ -347,8 +344,8 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               const SizedBox(width: 8),
               Container(
-                decoration: BoxDecoration(
-                  color: buttonColor,
+                decoration: const BoxDecoration(
+                  color: AppColors.accent,
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
@@ -392,7 +389,8 @@ class _ChatScreenState extends State<ChatScreen> {
                   emojiTextStyle: TextStyle(fontSize: 32, color: Colors.white),
                   customSearchIcon:
                       const Icon(Icons.search, color: Colors.white),
-                  customBackspaceIcon: const Icon(Icons.close, color: Colors.white),
+                  customBackspaceIcon:
+                      const Icon(Icons.close, color: Colors.white),
                   emojiViewConfig: EmojiViewConfig(
                     columns: 7,
                     emojiSizeMax: 32.0,
@@ -446,7 +444,6 @@ class _ChatScreenState extends State<ChatScreen> {
         _isLoading = true;
       });
 
-
       final prefs = await SharedPreferences.getInstance();
       final accessToken = prefs.getString('access_token');
 
@@ -465,7 +462,6 @@ class _ChatScreenState extends State<ChatScreen> {
         _messages.add(response.message);
         _isLoading = false;
       });
-
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -490,25 +486,26 @@ class _ChatScreenState extends State<ChatScreen> {
       final api = Api();
 
       final request = PostChatRequest(
-          chatId: _chatId,
-          message: _messages.first.content,
-          initialMessage: _messages.last,
+        chatId: _chatId,
+        message: _messages.first.content,
+        initialMessage: _messages.last,
       );
 
       final response = await api.sendMessageToChat(accessToken, request);
 
-        setState(() {
-          _messages.insert(0, ChatMessage(
-            content: response.message.content,
-            role: response.message.role,
-            updatedAt: response.message.updatedAt,
-          ));
-          _chatId = response.chatId;
-          _isLoading = false;
-          _messageCount++;
-          _saveMessageCount(_messageCount);
-        });
-
+      setState(() {
+        _messages.insert(
+            0,
+            ChatMessage(
+              content: response.message.content,
+              role: response.message.role,
+              updatedAt: response.message.updatedAt,
+            ));
+        _chatId = response.chatId;
+        _isLoading = false;
+        _messageCount++;
+        _saveMessageCount(_messageCount);
+      });
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -519,47 +516,48 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = Colors.deepPurple.shade900;
-    final chatBackground = const Color(0xFF2C2C54);
-    final userBubbleColor = Colors.deepOrange.shade700;
-    final aiBubbleColor = Colors.deepPurple.shade500;
-    final textColor = Colors.white;
+    final primaryColor = AppColors.primary;
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: AppColors.primary,
       extendBody: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        // height??
+        toolbarHeight: 88,
         systemOverlayStyle: SystemUiOverlayStyle.light,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: textColor),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textColor),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Row(
+        title: Column( children: [Row(
           children: [
-            Hero(
-              tag: 'guru-avatar',
-              child: CircleAvatar(
-                radius: 24,
-                backgroundColor: Colors.deepPurple.shade500,
-                backgroundImage: const AssetImage('assets/images/logo.png'),
-              ),
+            Container(
+                padding: EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryDark,
+                  shape: BoxShape.circle,
+                ),
+                child: Image.asset('assets/images/logo.png', width: 64,),
             ),
             const SizedBox(width: 12),
-            Text(
+            const Text(
               'Horoscope Guru',
               style: TextStyle(
-                color: textColor,
+                color: AppColors.textColor,
                 fontWeight: FontWeight.w600,
                 fontSize: 18,
               ),
             ),
           ],
         ),
+        SizedBox(height: 8,)
+
+        ] ),
         actions: [
           IconButton(
-            icon: Icon(Icons.more_vert, color: textColor.withOpacity(0.8)),
+            icon: Icon(Icons.more_vert, color: AppColors.textColor.withOpacity(0.8)),
             onPressed: () {},
           ),
         ],
@@ -570,14 +568,14 @@ class _ChatScreenState extends State<ChatScreen> {
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: chatBackground,
+                  color: AppColors.primaryDark,
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(24),
                     topRight: Radius.circular(24),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
+                      color: Colors.black.withOpacity(0.15),
                       blurRadius: 10,
                       spreadRadius: 2,
                     ),
@@ -595,16 +593,16 @@ class _ChatScreenState extends State<ChatScreen> {
                     itemBuilder: (context, index) {
                       return ChatBubble(
                         message: _messages[index],
-                        userBubbleColor: userBubbleColor,
-                        aiBubbleColor: aiBubbleColor,
-                        textColor: textColor,
+                        userBubbleColor: AppColors.accent,
+                        aiBubbleColor: AppColors.primary,
+                        textColor: AppColors.textColor,
                       );
                     },
                   ),
                 ),
               ),
             ),
-            _buildInputArea(textColor, userBubbleColor),
+            _buildInputArea(AppColors.textColor, primaryColor),
           ],
         ),
       ),

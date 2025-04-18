@@ -3,6 +3,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:horoscopeguruapp/screens/chat_screen.dart';
 import 'package:horoscopeguruapp/screens/home_screen.dart';
 import 'package:horoscopeguruapp/screens/login_screen.dart';
+import 'package:horoscopeguruapp/theme/colors.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,14 +17,23 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Horoscope Guru',
-
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-          scaffoldBackgroundColor: Colors.deepPurple.shade800,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF6B4EFF),
-          brightness: Brightness.dark,
+        colorScheme: ColorScheme.fromSwatch(
+          primarySwatch: Colors.deepPurple,
+          accentColor: AppColors.accent,
+        ).copyWith(
+          secondary: AppColors.accent,
+          background: AppColors.primaryDark,
         ),
+        scaffoldBackgroundColor: AppColors.primaryDark,
+        textTheme: ThemeData.light().textTheme.copyWith(
+              headlineSmall: TextStyle(color: AppColors.textColor),
+              titleMedium: TextStyle(color: AppColors.textColor),
+              bodyLarge: TextStyle(color: AppColors.textColor),
+              bodyMedium: TextStyle(color: AppColors.secondaryTextColor),
+            ),
+        iconTheme: IconThemeData(color: AppColors.textColor),
         useMaterial3: true,
       ),
       initialRoute: '/',

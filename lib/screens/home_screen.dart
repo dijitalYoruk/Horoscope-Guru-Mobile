@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:intl/intl.dart';
 
 import 'package:horoscopeguruapp/api/api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:horoscopeguruapp/theme/colors.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -59,26 +61,20 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildDailyLaughterCard() {
-    final textColor = Colors.white;
+    final primaryColor = AppColors.primary;
+    final textColor = AppColors.textColor;
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20),
-      padding: EdgeInsets.only( top: 20, bottom: 10, right: 16, left: 16),
+      padding: EdgeInsets.only(top: 20, bottom: 10, right: 16, left: 16),
       decoration: BoxDecoration(
-        color: Colors.deepPurple.shade500,
+        color: primaryColor,
         borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 12,
-            offset: Offset(0, 6),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'TODAY\'S COSMIC COMEDY',
             style: TextStyle(
               color: Colors.white,
@@ -87,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
               letterSpacing: 1.5,
             ),
           ),
-          SizedBox(height: 15),
+          const SizedBox(height: 15),
           Text(
             _funnyAstroQuote,
             style: TextStyle(
@@ -99,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 'Refresh for cosmic wisdom',
                 style: TextStyle(
                   color: Colors.white,
@@ -111,7 +107,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: Icon(Icons.refresh, color: Colors.white),
                 onPressed: () {
                   setState(() {
-                    _funnyAstroQuote = _astroQuotes[Random().nextInt(_astroQuotes.length)];
+                    _funnyAstroQuote =
+                        _astroQuotes[Random().nextInt(_astroQuotes.length)];
                   });
                 },
               ),
@@ -123,15 +120,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildChatHistorySection() {
-    final textColor = Colors.white;
     final secondaryTextColor = Colors.grey[400];
 
     return Expanded(
       child: Container(
         margin: EdgeInsets.fromLTRB(20, 0, 20, 0), // Removed bottom margin
-        decoration: BoxDecoration(
-          color: Colors.deepPurple.shade500,
-          borderRadius: BorderRadius.vertical(
+        decoration: const BoxDecoration(
+          color: AppColors.primary,
+          borderRadius: const BorderRadius.vertical(
             top: Radius.circular(20),
             bottom: Radius.circular(20), // Added bottom rounded corners
           ),
@@ -143,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
+                  const Text(
                     'Your Cosmic Questions',
                     style: TextStyle(
                       color: Colors.white,
@@ -153,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   TextButton(
                     onPressed: () {},
-                    child: Text(
+                    child: const Text(
                       'View All',
                       style: TextStyle(color: Colors.white),
                     ),
@@ -169,30 +165,61 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemBuilder: (context, index) {
                   final chat = _chatHistory[index];
                   return Container(
-                    margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.deepPurple.shade800,
+                      color: AppColors.primaryDark,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: ListTile(
-                      contentPadding: EdgeInsets.symmetric(
+                      contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 4,
                       ),
                       title: Text(
                         chat.chatTitle!,
                         style: TextStyle(
-                          color: textColor,
-                          fontSize: 16,
+                          color: Colors.white,
+                          fontSize: 15,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      trailing: Text(
-                        chat.updatedAt.toUtc().toString(),
-                        style: TextStyle(
-                          color: secondaryTextColor,
-                          fontSize: 12,
-                        ),
+                      trailing: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.calendar_today,
+                                  size: 12, color: secondaryTextColor),
+                              SizedBox(width: 4),
+                              Text(
+                                DateFormat('MMM d').format(chat.updatedAt),
+                                style: TextStyle(
+                                  color: secondaryTextColor,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 4),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.access_time,
+                                  size: 12, color: secondaryTextColor),
+                              SizedBox(width: 4),
+                              Text(
+                                DateFormat('HH:mm').format(chat.updatedAt),
+                                style: TextStyle(
+                                  color: secondaryTextColor,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                       onTap: () {},
                     ),
@@ -200,20 +227,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
           ],
         ),
-
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Colors.deepPurple.shade800;
-    final backgroundColor = Colors.deepPurple.shade800;
-    final iconBgColor = Colors.deepPurple.shade500;
-    final textColor = Colors.white;
+    final primaryColor = AppColors.primary;
+    final backgroundColor = AppColors.primaryDark;
+    final iconBgColor = AppColors.primary;
+    final textColor = AppColors.textColor;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -240,7 +266,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 15),
+                  const SizedBox(width: 15),
                   Text(
                     'Horoscope Guru',
                     style: TextStyle(
@@ -267,7 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.deepOrange.shade900,
-                  padding: EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -276,8 +302,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.chat, size: 24, color: Colors.white),
-                    SizedBox(width: 12),
+                    const Icon(Icons.chat, size: 24, color: Colors.white),
+                    const SizedBox(width: 12),
                     Text(
                       'Ask the Stars',
                       style: TextStyle(
@@ -293,35 +319,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             // Chat History Section
             _buildChatHistorySection(),
-            SizedBox(height: 20)
-
-            /* Premium Button (Commented for future use)
-            Container(
-              margin: EdgeInsets.fromLTRB(20, 0, 20, 20),
-              child: OutlinedButton(
-                onPressed: () {},
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  side: BorderSide(color: primaryColor, width: 1.5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.workspace_premium, size: 22),
-                    SizedBox(width: 12),
-                    Text(
-                      'Unlock Cosmic Secrets',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            */
+            const SizedBox(height: 20)
           ],
         ),
       ),

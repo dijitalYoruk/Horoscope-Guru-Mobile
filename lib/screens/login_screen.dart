@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:horoscopeguruapp/api/api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:horoscopeguruapp/theme/colors.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -66,7 +67,6 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/home');
       }
-
     } catch (error) {
       print('Google Sign-In failed: $error');
     }
@@ -79,8 +79,13 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = AppColors.primary;
+    final backgroundColor = AppColors.primaryDark;
+    final iconBgColor = AppColors.primary;
+    final textColor = AppColors.textColor;
+
     return Scaffold(
-      backgroundColor: Colors.deepPurple.shade800,
+      backgroundColor: backgroundColor,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -127,7 +132,7 @@ class _LoginPageState extends State<LoginPage> {
                 style: TextStyle(color: Colors.white, fontSize: 18.9),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurpleAccent,
+                backgroundColor: primaryColor,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                 shape: RoundedRectangleBorder(
