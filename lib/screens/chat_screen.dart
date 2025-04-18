@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -9,6 +8,7 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/rendering.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:horoscopeguruapp/theme/colors.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 class ChatBubble extends StatelessWidget {
   final ChatMessage message;
@@ -36,7 +36,7 @@ class ChatBubble extends StatelessWidget {
           if (message.role == ChatMessageRole.assistant)
             CircleAvatar(
               radius: 28,
-              backgroundColor: Colors.deepPurple.shade500,
+              backgroundColor: aiBubbleColor,
               backgroundImage: const AssetImage('assets/images/logo.png'),
             ),
           if (message.role == ChatMessageRole.assistant)
@@ -70,12 +70,10 @@ class ChatBubble extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Text(
-                    message.content,
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: 15,
-                      height: 1.4,
+                  child: MarkdownBody(
+                    data: message.content,
+                    styleSheet: MarkdownStyleSheet(
+                      p: TextStyle(color: textColor, fontSize: 15, height: 1.4),
                     ),
                   ),
                 ),
@@ -119,6 +117,8 @@ class _ChatScreenState extends State<ChatScreen> {
   int _messageCount = 0;
   bool _awaitingAd = false;
   bool _isEmojiPickerVisible = false;
+  bool _isProcessingMessage = false;
+  bool _isInputAreaVisible = false;
 
   final String _androidAdUnitId = 'ca-app-pub-3940256099942544/5224354917';
   final String _iosAdUnitId = 'ca-app-pub-3940256099942544/5224354917';
@@ -136,7 +136,12 @@ class _ChatScreenState extends State<ChatScreen> {
       // Remove the auto-close behavior when text changes
     });
 
-    _startNewChat();
+    _startNewChat().then((_) {
+      // Set input area visible after loading
+      setState(() {
+        _isInputAreaVisible = true;
+      });
+    });
   }
 
   Future<void> _loadMessageCount() async {
@@ -197,12 +202,19 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _handleSubmitted(String text) async {
-    if (text.trim().isEmpty) return;
+    if (text.trim().isEmpty || _isProcessingMessage) return;
+
+    setState(() {
+      _isProcessingMessage = true;
+    });
 
     if (ChatScreen.enableAds &&
         _messageCount >= ChatScreen.maxMessages &&
         !_awaitingAd) {
       _showRewardedAdDialog();
+      setState(() {
+        _isProcessingMessage = false;
+      });
       return;
     }
 
@@ -214,19 +226,24 @@ class _ChatScreenState extends State<ChatScreen> {
       _messages.insert(
           0,
           ChatMessage(
-              content: text,
-              role: ChatMessageRole.user,
-              updatedAt: DateTime.now()));
+            content: text,
+            role: ChatMessageRole.user,
+            updatedAt: DateTime.now(),
+          ));
     });
 
-    _sendMessage();
+    await _sendMessage();
+
+    setState(() {
+      _isProcessingMessage = false;
+    });
   }
 
   void _showRewardedAdDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.deepPurple.shade800,
+        backgroundColor: AppColors.primaryDarkE,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
@@ -279,10 +296,6 @@ class _ChatScreenState extends State<ChatScreen> {
     } else {
       _loadRewardedAd();
     }
-  }
-
-  String _formatTime(DateTime time) {
-    return "${time.hour}:${time.minute.toString().padLeft(2, '0')}";
   }
 
   Widget _buildInputArea(Color textColor, Color buttonColor) {
@@ -394,7 +407,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   emojiViewConfig: EmojiViewConfig(
                     columns: 7,
                     emojiSizeMax: 32.0,
-                    backgroundColor: const Color(0xFF2C2C54),
+                    backgroundColor: AppColors.primaryDark,
                     verticalSpacing: 0,
                     horizontalSpacing: 0,
                     gridPadding: EdgeInsets.zero,
@@ -409,23 +422,20 @@ class _ChatScreenState extends State<ChatScreen> {
                     loadingIndicator: SizedBox.shrink(),
                     buttonMode: ButtonMode.MATERIAL,
                   ),
-                  skinToneConfig: SkinToneConfig(
-                    dialogBackgroundColor: const Color(0xFF2C2C54),
-                    indicatorColor: Colors.deepPurple.shade500,
-                  ),
-                  categoryViewConfig: CategoryViewConfig(
-                    backgroundColor: Colors.deepPurple.shade800,
-                    iconColor: Colors.grey.shade400,
-                    iconColorSelected: Colors.deepPurple.shade300,
-                    indicatorColor: Colors.deepPurple.shade300,
+                  categoryViewConfig: const CategoryViewConfig(
+                    backgroundColor: AppColors.primaryDarkE,
+                    iconColor: AppColors.textColor,
+                    iconColorSelected: AppColors.accent,
+                    indicatorColor:  AppColors.accent,
                   ),
                   bottomActionBarConfig: BottomActionBarConfig(
-                    backgroundColor: Colors.deepPurple.shade800,
-                    buttonColor: Colors.deepPurple.shade800,
+                    backgroundColor: AppColors.primaryDarkE,
+                    buttonColor: AppColors.primaryDarkE,
                     buttonIconColor: Colors.white,
                   ),
                   searchViewConfig: SearchViewConfig(
-                    backgroundColor: Colors.deepPurple.shade800,
+                    backgroundColor: AppColors.primaryDarkE,
+                    hintTextStyle: TextStyle(color: AppColors.textColor),
                   ),
                 ),
               ),
@@ -451,10 +461,6 @@ class _ChatScreenState extends State<ChatScreen> {
         return;
       }
 
-      final dio = Dio(BaseOptions(
-        baseUrl: 'http://10.0.2.2:8080',
-      ));
-
       final api = Api();
       final response = await api.startChat(accessToken);
 
@@ -478,10 +484,6 @@ class _ChatScreenState extends State<ChatScreen> {
       if (accessToken == null) {
         return;
       }
-
-      final dio = Dio(BaseOptions(
-        baseUrl: 'http://10.0.2.2:8080',
-      ));
 
       final api = Api();
 
@@ -516,7 +518,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = AppColors.primary;
+    final backgroundColor = AppColors.primaryDark;
+    final textColor = AppColors.textColor;
 
     return Scaffold(
       backgroundColor: AppColors.primary,
@@ -524,40 +527,39 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        // height??
-        toolbarHeight: 88,
+        toolbarHeight: 84,
         systemOverlayStyle: SystemUiOverlayStyle.light,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textColor),
+          icon: Icon(Icons.arrow_back, color: textColor),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Column( children: [Row(
-          children: [
-            Container(
+        title:  Column(children: [
+          SizedBox(height: 10,),
+          Row(
+            children: [
+              Container(
                 padding: EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryDark,
-                  shape: BoxShape.circle,
-                ),
-                child: Image.asset('assets/images/logo.png', width: 64,),
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'Horoscope Guru',
-              style: TextStyle(
-                color: AppColors.textColor,
-                fontWeight: FontWeight.w600,
-                fontSize: 18,
+                    color: AppColors.primaryDark,
+                    borderRadius: BorderRadius.all(Radius.circular(64))),
+                child: Image.asset('assets/images/logo.png', height: 64,),
               ),
-            ),
-          ],
-        ),
-        SizedBox(height: 8,)
-
-        ] ),
+              const SizedBox(width: 12),
+              Text(
+                'Horoscope Guru',
+                style: TextStyle(
+                  color: textColor,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10,)
+        ],),
         actions: [
           IconButton(
-            icon: Icon(Icons.more_vert, color: AppColors.textColor.withOpacity(0.8)),
+            icon: Icon(Icons.more_vert, color: textColor.withOpacity(0.8)),
             onPressed: () {},
           ),
         ],
@@ -565,44 +567,86 @@ class _ChatScreenState extends State<ChatScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.primaryDark,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(24),
-                    topRight: Radius.circular(24),
+            if (_isLoading)
+              Expanded(
+                child: Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
-                      blurRadius: 10,
-                      spreadRadius: 2,
+                ),
+              )
+            else
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: backgroundColor,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(24),
+                      topRight: Radius.circular(24),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 10,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(24),
+                        topRight: Radius.circular(24),
+                      ),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 16),
+                          Expanded(
+                            child: ListView.builder(
+                              reverse: true,
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                              itemCount: _messages.length,
+                              itemBuilder: (context, index) {
+                                return ChatBubble(
+                                  message: _messages[index],
+                                  userBubbleColor: AppColors.accent,
+                                  aiBubbleColor: AppColors.primary,
+                                  textColor: textColor,
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      )),
+                ),
+              ),
+            if (_isProcessingMessage)
+              Container(
+                width: double.infinity,
+                color: AppColors.accent.withOpacity(0.1),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Transform.scale(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+                          strokeWidth: 6,
+                        ),
+                        scale: 0.5
+                    ),
+                    Text(
+                      'The Guru is thinking... Please wait.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppColors.accent,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(24),
-                    topRight: Radius.circular(24),
-                  ),
-                  child: ListView.builder(
-                    reverse: true,
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-                    itemCount: _messages.length,
-                    itemBuilder: (context, index) {
-                      return ChatBubble(
-                        message: _messages[index],
-                        userBubbleColor: AppColors.accent,
-                        aiBubbleColor: AppColors.primary,
-                        textColor: AppColors.textColor,
-                      );
-                    },
-                  ),
-                ),
               ),
-            ),
-            _buildInputArea(AppColors.textColor, primaryColor),
+            if (_isInputAreaVisible) _buildInputArea(textColor, AppColors.primary),
           ],
         ),
       ),
