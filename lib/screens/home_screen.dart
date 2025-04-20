@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:intl/intl.dart';
 
 import 'package:horoscopeguruapp/api/api.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:horoscopeguruapp/theme/colors.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -45,19 +44,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> getUserChats() async {
-    final prefs = await SharedPreferences.getInstance();
-    final accessToken = prefs.getString('access_token');
+     var api = Api();
+      var response = await api.getAllUserChats(context);
 
-    if (accessToken == null) {
-      return;
-    }
-
-    var api = Api();
-    var response = await api.getAllUserChats(accessToken);
-
-    setState(() {
-      _chatHistory = response.chats;
-    });
+      setState(() {
+        _chatHistory = response.chats;
+      });
   }
 
   Widget _buildDailyLaughterCard() {
@@ -236,7 +228,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = AppColors.primary;
     final backgroundColor = AppColors.primaryDark;
     final iconBgColor = AppColors.primary;
     final textColor = AppColors.textColor;

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:horoscopeguruapp/api/api.dart';
@@ -38,7 +39,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _handleSignIn() async {
-    try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         print('Google Sign-In was aborted by user');
@@ -57,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
       // make a sign in request using open api by sending id token
       final api = Api();
 
-      var resp = await api.signInWithGoogle(idToken);
+      var resp = await api.signInWithGoogle(idToken, context);
 
       // Save the token to SharedPreferences
       final prefs = await SharedPreferences.getInstance();
@@ -67,9 +67,6 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/home');
       }
-    } catch (error) {
-      print('Google Sign-In failed: $error');
-    }
   }
 
   // Example function to send the access token to your backend
@@ -81,8 +78,6 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final primaryColor = AppColors.primary;
     final backgroundColor = AppColors.primaryDark;
-    final iconBgColor = AppColors.primary;
-    final textColor = AppColors.textColor;
 
     return Scaffold(
       backgroundColor: backgroundColor,

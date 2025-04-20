@@ -49,7 +49,7 @@ class ChatBubble extends StatelessWidget {
               children: [
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     color: message.role == ChatMessageRole.user
                         ? userBubbleColor
@@ -97,7 +97,9 @@ class ChatBubble extends StatelessWidget {
 }
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  final String? chatId;
+
+  const ChatScreen({super.key, this.chatId});
 
   static const bool enableAds = true;
   static const int maxMessages = 4;
@@ -125,9 +127,14 @@ class _ChatScreenState extends State<ChatScreen> {
 
   String get _adUnitId => Platform.isIOS ? _iosAdUnitId : _androidAdUnitId;
 
+  String? _chatId;
+
   @override
   void initState() {
     super.initState();
+    _chatId = widget.chatId;
+
+
     _loadMessageCount();
     if (ChatScreen.enableAds) {
       _initAdMob();
@@ -135,6 +142,12 @@ class _ChatScreenState extends State<ChatScreen> {
     _messageController.addListener(() {
       // Remove the auto-close behavior when text changes
     });
+
+    if (_chatId != null) {
+      
+
+
+    }
 
     _startNewChat().then((_) {
       // Set input area visible after loading
@@ -202,7 +215,9 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _handleSubmitted(String text) async {
-    if (text.trim().isEmpty || _isProcessingMessage) return;
+    if (text
+        .trim()
+        .isEmpty || _isProcessingMessage) return;
 
     setState(() {
       _isProcessingMessage = true;
@@ -242,48 +257,50 @@ class _ChatScreenState extends State<ChatScreen> {
   void _showRewardedAdDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.primaryDarkE,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Icon(Icons.star_rounded, size: 36, color: Colors.amberAccent),
-            const SizedBox(width: 10),
-            const Text("Watch an Ad"),
-          ],
-        ),
-        titleTextStyle: TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
-        content: const Text(
-          "Watch a short ad to unlock 4 more messages.",
-        ),
-        contentTextStyle: TextStyle(
-          color: Colors.grey,
-          fontSize: 15,
-        ),
-        actions: [
-          TextButton(
-            child: const Text("Cancel"),
-            onPressed: () => Navigator.of(context).pop(),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.grey.shade300,
+      builder: (context) =>
+          AlertDialog(
+            backgroundColor: AppColors.primaryDarkE,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20)),
+            title: Row(
+              children: [
+                Icon(Icons.star_rounded, size: 36, color: Colors.amberAccent),
+                const SizedBox(width: 10),
+                const Text("Watch an Ad"),
+              ],
             ),
-          ),
-          TextButton(
-            child: const Text("Watch Ad"),
-            onPressed: () {
-              Navigator.of(context).pop();
-              _showRewardedAd();
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.orangeAccent,
+            titleTextStyle: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
             ),
+            content: const Text(
+              "Watch a short ad to unlock 4 more messages.",
+            ),
+            contentTextStyle: TextStyle(
+              color: Colors.grey,
+              fontSize: 15,
+            ),
+            actions: [
+              TextButton(
+                child: const Text("Cancel"),
+                onPressed: () => Navigator.of(context).pop(),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.grey.shade300,
+                ),
+              ),
+              TextButton(
+                child: const Text("Watch Ad"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _showRewardedAd();
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.orangeAccent,
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -401,9 +418,9 @@ class _ChatScreenState extends State<ChatScreen> {
                   emojiSet: null,
                   emojiTextStyle: TextStyle(fontSize: 32, color: Colors.white),
                   customSearchIcon:
-                      const Icon(Icons.search, color: Colors.white),
+                  const Icon(Icons.search, color: Colors.white),
                   customBackspaceIcon:
-                      const Icon(Icons.close, color: Colors.white),
+                  const Icon(Icons.close, color: Colors.white),
                   emojiViewConfig: EmojiViewConfig(
                     columns: 7,
                     emojiSizeMax: 32.0,
@@ -416,7 +433,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     noRecents: Text(
                       'No Recents',
                       style:
-                          TextStyle(fontSize: 20, color: Colors.grey.shade400),
+                      TextStyle(fontSize: 20, color: Colors.grey.shade400),
                       textAlign: TextAlign.center,
                     ),
                     loadingIndicator: SizedBox.shrink(),
@@ -426,7 +443,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     backgroundColor: AppColors.primaryDarkE,
                     iconColor: AppColors.textColor,
                     iconColorSelected: AppColors.accent,
-                    indicatorColor:  AppColors.accent,
+                    indicatorColor: AppColors.accent,
                   ),
                   bottomActionBarConfig: BottomActionBarConfig(
                     backgroundColor: AppColors.primaryDarkE,
@@ -445,24 +462,18 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  String? _chatId = "";
   var _isLoading = false;
 
   Future<void> _startNewChat() async {
-    try {
       setState(() {
         _isLoading = true;
       });
 
-      final prefs = await SharedPreferences.getInstance();
-      final accessToken = prefs.getString('access_token');
 
-      if (accessToken == null) {
-        return;
-      }
+      try {
 
-      final api = Api();
-      final response = await api.startChat(accessToken);
+        final api = Api();
+      final response = await api.startChat(context);
 
       setState(() {
         _messages.add(response.message);
@@ -472,28 +483,19 @@ class _ChatScreenState extends State<ChatScreen> {
       setState(() {
         _isLoading = false;
       });
-      print('Error starting chat: $e');
     }
   }
 
   Future<void> _sendMessage() async {
+    final api = Api();
+    final request = PostChatRequest(
+      chatId: _chatId,
+      message: _messages.first.content,
+      initialMessage: _messages.last,
+    );
+
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final accessToken = prefs.getString('access_token');
-
-      if (accessToken == null) {
-        return;
-      }
-
-      final api = Api();
-
-      final request = PostChatRequest(
-        chatId: _chatId,
-        message: _messages.first.content,
-        initialMessage: _messages.last,
-      );
-
-      final response = await api.sendMessageToChat(accessToken, request);
+      final response = await api.sendMessageToChat(request, context);
 
       setState(() {
         _messages.insert(
@@ -508,33 +510,36 @@ class _ChatScreenState extends State<ChatScreen> {
         _messageCount++;
         _saveMessageCount(_messageCount);
       });
-    } catch (e) {
+    }
+    catch (e) {
       setState(() {
         _isLoading = false;
       });
-      print('Error sending message: $e');
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final backgroundColor = AppColors.primaryDark;
-    final textColor = AppColors.textColor;
+@override
+Widget build(BuildContext context) {
+  final backgroundColor = AppColors.primaryDark;
+  final textColor = AppColors.textColor;
 
-    return Scaffold(
-      backgroundColor: AppColors.primary,
-      extendBody: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        toolbarHeight: 84,
-        systemOverlayStyle: SystemUiOverlayStyle.light,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: textColor),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title:  Column(children: [
-          SizedBox(height: 10,),
+  return Scaffold(
+    backgroundColor: AppColors.primary,
+    extendBody: true,
+    appBar: AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      toolbarHeight: 84,
+      systemOverlayStyle: SystemUiOverlayStyle.light,
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back, color: textColor),
+        onPressed: () => Navigator.pop(context),
+      ),
+      title: Column(
+        children: [
+          SizedBox(
+            height: 10,
+          ),
           Row(
             children: [
               Container(
@@ -542,7 +547,10 @@ class _ChatScreenState extends State<ChatScreen> {
                 decoration: BoxDecoration(
                     color: AppColors.primaryDark,
                     borderRadius: BorderRadius.all(Radius.circular(64))),
-                child: Image.asset('assets/images/logo.png', height: 64,),
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  height: 64,
+                ),
               ),
               const SizedBox(width: 12),
               Text(
@@ -555,101 +563,104 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ],
           ),
-          SizedBox(height: 10,)
-        ],),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.more_vert, color: textColor.withOpacity(0.8)),
-            onPressed: () {},
-          ),
+          SizedBox(
+            height: 10,
+          )
         ],
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            if (_isLoading)
-              Expanded(
-                child: Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
-                  ),
+      actions: [
+        IconButton(
+          icon: Icon(Icons.more_vert, color: textColor.withOpacity(0.8)),
+          onPressed: () {},
+        ),
+      ],
+    ),
+    body: SafeArea(
+      child: Column(
+        children: [
+          if (_isLoading)
+            Expanded(
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
                 ),
-              )
-            else
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: backgroundColor,
+              ),
+            )
+          else
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: backgroundColor,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(24),
                       topRight: Radius.circular(24),
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 10,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(24),
-                        topRight: Radius.circular(24),
-                      ),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 16),
-                          Expanded(
-                            child: ListView.builder(
-                              reverse: true,
-                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                              itemCount: _messages.length,
-                              itemBuilder: (context, index) {
-                                return ChatBubble(
-                                  message: _messages[index],
-                                  userBubbleColor: AppColors.accent,
-                                  aiBubbleColor: AppColors.primary,
-                                  textColor: textColor,
-                                );
-                              },
-                            ),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 16),
+                        Expanded(
+                          child: ListView.builder(
+                            reverse: true,
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                            itemCount: _messages.length,
+                            itemBuilder: (context, index) {
+                              return ChatBubble(
+                                message: _messages[index],
+                                userBubbleColor: AppColors.accent,
+                                aiBubbleColor: AppColors.primary,
+                                textColor: textColor,
+                              );
+                            },
                           ),
-                          const SizedBox(height: 16),
-                        ],
-                      )),
-                ),
-              ),
-            if (_isProcessingMessage)
-              Container(
-                width: double.infinity,
-                color: AppColors.accent.withOpacity(0.1),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Transform.scale(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
-                          strokeWidth: 6,
                         ),
-                        scale: 0.5
-                    ),
-                    Text(
-                      'The Guru is thinking... Please wait.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: AppColors.accent,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
+                        const SizedBox(height: 16),
+                      ],
+                    )),
               ),
-            if (_isInputAreaVisible) _buildInputArea(textColor, AppColors.primary),
-          ],
-        ),
+            ),
+          if (_isProcessingMessage)
+            Container(
+              width: double.infinity,
+              color: AppColors.accent.withOpacity(0.1),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Transform.scale(
+                      child: CircularProgressIndicator(
+                        valueColor:
+                        AlwaysStoppedAnimation<Color>(AppColors.accent),
+                        strokeWidth: 6,
+                      ),
+                      scale: 0.5),
+                  Text(
+                    'The Guru is thinking... Please wait.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppColors.accent,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (_isInputAreaVisible)
+            _buildInputArea(textColor, AppColors.primary),
+        ],
       ),
-    );
-  }
-}
+    ),
+  );
+}}

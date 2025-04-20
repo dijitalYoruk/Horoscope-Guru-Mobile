@@ -42,6 +42,18 @@ paths:
                 $ref: '#/components/schemas/StartChatResponse'
 
   /chat:
+    get:
+      security:
+        - bearerAuth: []
+      summary: Retrieves all chats for the user.
+      operationId: getAllUserChats
+      responses:
+        '200':
+          description: "GetAllUserChatsResponse"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAllUserChatsResponse'
     post:
       security:
         - bearerAuth: []
@@ -59,6 +71,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PostChatResponse'
+
+  /chat/{chatId}:
+    get:
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: chatId
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: "ChatMessage"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetChatResponse'
+
 
   /chat/{chatId}/generate/title:
     get:
@@ -126,12 +157,11 @@ components:
     PostChatRequest:
       type: object
       required:
+        - initialMessage
         - message
       properties:
         initialMessage:
-          allOf:
-           - $ref: '#/components/schemas/ChatMessage'
-          nullable: true
+          $ref: '#/components/schemas/ChatMessage'
         chatId:
           type: string
         message:
@@ -156,6 +186,40 @@ components:
         title:
           type: string
 
+    GetChatResponse:
+      type: object
+      required:
+        - chatId
+        - chatTitle
+        - updatedAt
+        - createdAt
+        - messages
+      properties:
+        chatId:
+          type: string
+        chatTitle:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        chatMessages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+
+    GetAllUserChatsResponse:
+      type: object
+      required:
+        - chats
+      properties:
+        chats:
+          type: array
+          items:
+            $ref: '#/components/schemas/Chat'
+
     StartChatRequest:
       type: object
 
@@ -166,6 +230,24 @@ components:
       properties:
         message:
           $ref: '#/components/schemas/ChatMessage'
+
+    Chat:
+      type: object
+      required:
+        - chatId
+        - updatedAt
+        - createdAt
+      properties:
+        chatId:
+          type: string
+        chatTitle:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
 
     ChatMessage:
       type: object
