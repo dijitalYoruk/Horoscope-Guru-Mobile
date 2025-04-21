@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:horoscopeguruapp/screens/login_screen.dart';
@@ -27,20 +26,53 @@ class User {
   final String email;
   final String name;
   final String surname;
+  final String? birthPlace;
+  final String? birthDate;
+  final String? birthTime;
 
   User({
     required this.id,
     required this.email,
     required this.name,
     required this.surname,
+    this.birthPlace,
+    this.birthDate,
+    this.birthTime,
   });
 
   factory User.fromJson(Map<String, dynamic> json) => User(
-        id: json['id'],
-        email: json['email'],
-        name: json['name'],
-        surname: json['surname'],
-      );
+    id: json['id'],
+    email: json['email'],
+    name: json['name'],
+    surname: json['surname'],
+    birthPlace: json['birthPlace'],
+    birthDate: json['birthDate'],
+    birthTime: json['birthTime'],
+  );
+}
+
+class UpdateUserRequest {
+  final String name;
+  final String surname;
+  final String birthPlace;
+  final String birthDate;
+  final String? birthTime;
+
+  UpdateUserRequest({
+    required this.name,
+    required this.surname,
+    required this.birthPlace,
+    required this.birthDate,
+    this.birthTime,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'surname': surname,
+    'birthPlace': birthPlace,
+    'birthDate': birthDate,
+    if (birthTime != null) 'birthTime': birthTime,
+  };
 }
 
 class StartChatRequest {
@@ -68,10 +100,10 @@ class PostChatRequest {
   PostChatRequest({required this.message, this.chatId, this.initialMessage});
 
   Map<String, dynamic> toJson() => {
-        if (chatId != null) 'chatId': chatId,
-        'message': message,
-        if (initialMessage != null) 'initialMessage': initialMessage!.toJson(),
-      };
+    if (chatId != null) 'chatId': chatId,
+    'message': message,
+    if (initialMessage != null) 'initialMessage': initialMessage!.toJson(),
+  };
 }
 
 class PostChatResponse {
@@ -106,8 +138,8 @@ class GetChatResponse {
       GetChatResponse(
         chatId: json['chatId'],
         chatTitle: json['chatTitle'],
-        createdAt: HttpDate.parse(json['createdAt']),
-        updatedAt: HttpDate.parse(json['updatedAt']),
+        createdAt: DateTime.parse(json['createdAt']),
+        updatedAt: DateTime.parse(json['updatedAt']),
         chatMessages: List<ChatMessage>.from(
           json['chatMessages'].map((msg) => ChatMessage.fromJson(msg)),
         ),
@@ -150,11 +182,11 @@ class Chat {
   });
 
   factory Chat.fromJson(Map<String, dynamic> json) => Chat(
-        chatId: json['chatId'],
-        chatTitle: json['chatTitle'],
-        createdAt: HttpDate.parse(json['createdAt']),
-        updatedAt: HttpDate.parse(json['updatedAt']),
-      );
+    chatId: json['chatId'],
+    chatTitle: json['chatTitle'],
+    createdAt: HttpDate.parse(json['createdAt']),
+    updatedAt: HttpDate.parse(json['updatedAt']),
+  );
 }
 
 class ChatMessage {
@@ -169,16 +201,16 @@ class ChatMessage {
   });
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
-        role: ChatMessageRoleExtension.fromString(json['role']),
-        content: json['content'],
-        updatedAt: HttpDate.parse(json['updatedAt']),
-      );
+    role: ChatMessageRoleExtension.fromString(json['role']),
+    content: json['content'],
+    updatedAt: HttpDate.parse(json['updatedAt']),
+  );
 
   Map<String, dynamic> toJson() => {
-        'role': role.name,
-        'content': content,
-        'updatedAt': updatedAt.toIso8601String(),
-      };
+    'role': role.name,
+    'content': content,
+    'updatedAt': updatedAt.toIso8601String(),
+  };
 }
 
 enum ChatMessageRole { assistant, system, user }
@@ -204,14 +236,12 @@ class Api {
   static final Api _instance = Api._internal();
   final Dio _dio;
 
-  factory Api() {
-    return _instance;
-  }
+  factory Api() => _instance;
 
   Api._internal()
       : _dio = Dio(
-          BaseOptions(baseUrl: 'http://10.0.2.2:8080'),
-        );
+    BaseOptions(baseUrl: 'http://10.0.2.2:8080'),
+  );
 
   Future<GoogleSignInResponse> signInWithGoogle(
       String idToken, BuildContext context) async {
@@ -220,7 +250,6 @@ class Api {
         '/auth/google/sign-in',
         queryParameters: {'idToken': idToken},
       );
-
       return GoogleSignInResponse.fromJson(response.data);
     } catch (exp) {
       handleApiError(exp, context, false);
@@ -303,6 +332,35 @@ class Api {
     }
   }
 
+  Future<User> getUser(BuildContext context) async {
+    try {
+      var accessToken = await getAccessToken(context);
+      final response = await _dio.get(
+        '/user',
+        options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+      );
+      return User.fromJson(response.data['user']);
+    } catch (exp) {
+      handleApiError(exp, context);
+      rethrow;
+    }
+  }
+
+  Future<User> updateUser(UpdateUserRequest request, BuildContext context) async {
+    try {
+      var accessToken = await getAccessToken(context);
+      final response = await _dio.patch(
+        '/user',
+        options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+        data: request.toJson(),
+      );
+      return User.fromJson(response.data['user']);
+    } catch (exp) {
+      handleApiError(exp, context);
+      rethrow;
+    }
+  }
+
   Future<String?> getAccessToken(BuildContext context) async {
     var prefs = await SharedPreferences.getInstance();
     var accessToken = prefs.getString('access_token');
@@ -311,7 +369,7 @@ class Api {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => LoginPage()),
-        (route) => false,
+            (route) => false,
       );
     }
 
@@ -327,7 +385,7 @@ class Api {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => LoginPage()),
-        (route) => false,
+            (route) => false,
       );
       return;
     }

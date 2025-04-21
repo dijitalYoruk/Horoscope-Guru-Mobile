@@ -58,7 +58,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     super.dispose();
   }
 
-
   @override
   void didPopNext() {
     // Refetch user chats when returning to this screen
@@ -312,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                   Navigator.pushNamed(context, '/userProfile');
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepOrange.shade900,
+                  backgroundColor: AppColors.accent,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
