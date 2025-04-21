@@ -213,87 +213,119 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               ),
             ),
             Expanded(
-              child: ListView.builder(
-                physics: AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.only(bottom: 20),
-                itemCount: _chatHistory.length,
-                itemBuilder: (context, index) {
-                  final chat = _chatHistory[index];
-                  return Container(
-                    margin:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryDark,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
-                      title: Text(
-                        chat.chatTitle!,
+              child: _chatHistory.isEmpty
+                  ? Center(
+                      child: Text(
+                        'No cosmic questions received yet.',
                         style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
+                          color: secondaryTextColor,
+                          fontSize: 16,
+                          fontStyle: FontStyle.italic,
                         ),
                       ),
-                      trailing: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.calendar_today,
-                                size: 12,
-                                color: AppColors.accent,
+                    )
+                  : ListView.builder(
+                      physics: AlwaysScrollableScrollPhysics(),
+                      padding: EdgeInsets.only(bottom: 20),
+                      itemCount: _chatHistory.length,
+                      itemBuilder: (context, index) {
+                        final chat = _chatHistory[index];
+                        return Dismissible(
+                          key: Key(chat.chatId.toString()),
+                          direction: DismissDirection.endToStart,
+                          onDismissed: (direction) async {
+                            Api api = new Api();
+                            await api.deleteChat(chat.chatId, context);
+
+                            setState(() {
+                              _chatHistory.removeAt(index);
+
+                            });
+                          },
+                          background: Container(
+                            color: Colors.red,
+                            alignment: Alignment.centerRight,
+                            padding: EdgeInsets.symmetric(horizontal: 20),
+                            child: Icon(Icons.delete, color: Colors.white),
+                          ),
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryDark,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 4,
                               ),
-                              SizedBox(width: 4),
-                              Text(
-                                DateFormat('MMM d').format(chat.updatedAt),
+                              title: Text(
+                                chat.chatTitle!,
                                 style: TextStyle(
-                                  color: AppColors.accent,
-                                  fontSize: 12,
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                            ],
-                          ),
-                          SizedBox(height: 4),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.access_time,
-                                size: 12,
-                                color: AppColors.accent,
+                              trailing: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.calendar_today,
+                                        size: 12,
+                                        color: AppColors.accent,
+                                      ),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        DateFormat('MMM d')
+                                            .format(chat.updatedAt),
+                                        style: TextStyle(
+                                          color: AppColors.accent,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 4),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.access_time,
+                                        size: 12,
+                                        color: AppColors.accent,
+                                      ),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        DateFormat('HH:mm')
+                                            .format(chat.updatedAt),
+                                        style: TextStyle(
+                                          color: AppColors.accent,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                              SizedBox(width: 4),
-                              Text(
-                                DateFormat('HH:mm').format(chat.updatedAt),
-                                style: TextStyle(
-                                  color: AppColors.accent,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          ChatScreen(chatId: chat.chatId),
+                                    ));
+                              },
+                            ),
                           ),
-                        ],
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  ChatScreen(chatId: chat.chatId),
-                            ));
+                        );
                       },
                     ),
-                  );
-                },
-              ),
             ),
             const SizedBox(height: 20),
           ],
@@ -534,23 +566,20 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                                   letterSpacing: 1.1,
                                 ),
                               ),
-
-                                GestureDetector(
-                                  onTap: _handleSignOut,
-                                  child: Container(
-                                    padding: EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(20))),
-                                    child: FaIcon(
-                                      FontAwesomeIcons.signOutAlt,
-                                      color: AppColors.accent,
-                                      size: 24,
-                                    ),
+                              GestureDetector(
+                                onTap: _handleSignOut,
+                                child: Container(
+                                  padding: EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(20))),
+                                  child: FaIcon(
+                                    FontAwesomeIcons.signOutAlt,
+                                    color: AppColors.accent,
+                                    size: 24,
                                   ),
                                 ),
-
+                              ),
                             ]),
                         SizedBox(
                           height: 4,

@@ -332,6 +332,19 @@ class Api {
     }
   }
 
+  Future<void> deleteChat(String chatId, BuildContext context) async {
+    try {
+      var accessToken = await getAccessToken(context);
+      await _dio.delete(
+        '/chat/$chatId',
+        options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+      );
+    } catch (exp) {
+      handleApiError(exp, context);
+      rethrow;
+    }
+  }
+
   Future<User> getUser(BuildContext context) async {
     try {
       var accessToken = await getAccessToken(context);
@@ -380,24 +393,18 @@ class Api {
       [bool checkAuth = true]) async {
     if (checkAuth && e.response?.statusCode == 401) {
       var prefs = await SharedPreferences.getInstance();
-      await prefs.remove("access_token");
-
-
+      await prefs.clear();
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => LoginPage()),
             (route) => false,
       );
-      return;
+    } else {
+      Fluttertoast.showToast(
+        msg: 'Bir hata oluştu: ${e.toString()}',
+        backgroundColor: AppColors.accent,
+        textColor: Colors.white,
+      );
     }
-
-    Fluttertoast.showToast(
-      msg: e.response?.statusCode.toString() ?? 'Unknown error',
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.BOTTOM,
-      backgroundColor: AppColors.accent,
-      textColor: Colors.white,
-      fontSize: 16.0,
-    );
   }
 }
