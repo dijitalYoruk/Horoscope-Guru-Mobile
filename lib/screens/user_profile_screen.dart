@@ -204,23 +204,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.primaryDark,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(
-          localizations.profileTitle,
-          style: TextStyle(color: AppColors.textColor),
-        ),
-        actions: [
-          // Settings button
-          IconButton(
-            icon: Icon(Icons.settings, color: AppColors.textColor),
-            onPressed: () {
-              Navigator.pushNamed(context, '/settings');
-            },
-          ),
-        ],
-      ),
       body: Stack(
         children: [
           // Background star decoration
@@ -229,7 +212,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               opacity: 0.1,
               child: Image.asset(
                 'assets/images/logo.png',
-                fit: BoxFit.cover,
+                fit: BoxFit.fitHeight,
               ),
             ),
           ),
@@ -237,22 +220,31 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           Column(
             children: [
               // Scrollable content
+              const SizedBox(height: 36),
+              // Header section
+              Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    IconButton(onPressed: () {
+                        Navigator.pop(context);
+
+                    },  icon: Icon(Icons.arrow_back, color: AppColors.accent, size: 22)),
+                    Text(
+                      localizations.tellTheStarsAboutYourself,
+                      style: TextStyle(
+                        color: Colors.orange,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),]), ),
+
               Expanded(
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding: const EdgeInsets.all(20.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Header section
-                        Text(
-                          localizations.tellTheStarsAboutYourself,
-                          style: TextStyle(
-                            color: Colors.orange,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
                         const SizedBox(height: 16),
                         Container(
                           padding: EdgeInsets.all(12),

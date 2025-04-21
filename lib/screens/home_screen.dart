@@ -96,8 +96,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       _userData = userData;
     });
 
-    mainApp.changeLocale(
-        context, userData.preferredLanguage);
+    mainApp.changeLocale(context, userData.preferredLanguage);
   }
 
   Future<void> _handleSignOut() async {
@@ -149,7 +148,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               ),
             ],
           ),
-
           const SizedBox(height: 8),
           Text(
             quote,
@@ -668,19 +666,19 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  elevation: 1,
+                  elevation: 0,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.chat, size: 24, color: Colors.white),
+                    const Icon(Icons.chat, size: 24, color: AppColors.primary),
                     const SizedBox(width: 12),
                     Text(
                       localizations.askTheStars,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
-                        color: textColor,
+                        color: AppColors.primary,
                       ),
                     ),
                   ],

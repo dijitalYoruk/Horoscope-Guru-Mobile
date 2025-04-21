@@ -586,9 +586,73 @@ class _ChatScreenState extends State<ChatScreen> {
           ],
         ),
         actions: [
-          IconButton(
+          PopupMenuButton<String>(
             icon: Icon(Icons.more_vert, color: AppColors.accent),
-            onPressed: () {},
+            color: AppColors.primaryDark,
+            onSelected: (String result) {
+              if (_chatId == null) {
+                Navigator.of(context).pop();
+                return;
+              }
+
+              if (result == 'delete') {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      backgroundColor: AppColors.primaryDarkE,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      title: Text(
+                        'Delete Chat',
+                        style: TextStyle(
+                          color: AppColors.accent,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      content: Text(
+                        'Are you sure you want to delete this chat?',
+                        style: TextStyle(
+                          color: AppColors.textColor,
+                          fontSize: 16,
+                        ),
+                      ),
+                      actions: <Widget>[
+                        TextButton(
+                          child: Text('Cancel',
+                              style: TextStyle(color: AppColors.accent)),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                        TextButton(
+                          child: Text('Delete',
+                              style: TextStyle(color: AppColors.accent)),
+                          onPressed: () async {
+                            Api api = Api();
+                            await api.deleteChat(_chatId!, context);
+                            Navigator.of(context).pop();
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
+              }
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: 'delete',
+                child: Text('Delete Chat',
+                    style: TextStyle(
+                        color: AppColors.accent,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700)),
+              ),
+            ],
           ),
         ],
       ),
@@ -650,15 +714,26 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             if (_isProcessingMessage)
               Container(
-                padding: const EdgeInsets.all(16),
+                width: double.infinity,
+                color: AppColors.accent.withOpacity(0.1),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    CircularProgressIndicator(),
-                    SizedBox(width: 16),
+                  children: [
+                    Transform.scale(
+                        child: CircularProgressIndicator(
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(AppColors.accent),
+                          strokeWidth: 6,
+                        ),
+                        scale: 0.5),
                     Text(
-                      'Processing...',
-                      style: TextStyle(color: Colors.white),
+                      'The Guru is thinking... Please wait.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppColors.accent,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
