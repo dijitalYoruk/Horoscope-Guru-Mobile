@@ -49,7 +49,7 @@ class ChatBubble extends StatelessWidget {
               children: [
                 Container(
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     color: message.role == ChatMessageRole.user
                         ? userBubbleColor
@@ -134,7 +134,6 @@ class _ChatScreenState extends State<ChatScreen> {
     super.initState();
     _chatId = widget.chatId;
 
-
     _loadMessageCount();
     if (ChatScreen.enableAds) {
       _initAdMob();
@@ -218,9 +217,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _handleSubmitted(String text) async {
-    if (text
-        .trim()
-        .isEmpty || _isProcessingMessage) return;
+    if (text.trim().isEmpty || _isProcessingMessage) return;
 
     setState(() {
       _isProcessingMessage = true;
@@ -260,50 +257,48 @@ class _ChatScreenState extends State<ChatScreen> {
   void _showRewardedAdDialog() {
     showDialog(
       context: context,
-      builder: (context) =>
-          AlertDialog(
-            backgroundColor: AppColors.primaryDarkE,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20)),
-            title: Row(
-              children: [
-                Icon(Icons.star_rounded, size: 36, color: Colors.amberAccent),
-                const SizedBox(width: 10),
-                const Text("Watch an Ad"),
-              ],
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.primaryDarkE,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.star_rounded, size: 36, color: Colors.amberAccent),
+            const SizedBox(width: 10),
+            const Text("Watch an Ad"),
+          ],
+        ),
+        titleTextStyle: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+        content: const Text(
+          "Watch a short ad to unlock 4 more messages.",
+        ),
+        contentTextStyle: TextStyle(
+          color: Colors.grey,
+          fontSize: 15,
+        ),
+        actions: [
+          TextButton(
+            child: const Text("Cancel"),
+            onPressed: () => Navigator.of(context).pop(),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.grey.shade300,
             ),
-            titleTextStyle: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-            content: const Text(
-              "Watch a short ad to unlock 4 more messages.",
-            ),
-            contentTextStyle: TextStyle(
-              color: Colors.grey,
-              fontSize: 15,
-            ),
-            actions: [
-              TextButton(
-                child: const Text("Cancel"),
-                onPressed: () => Navigator.of(context).pop(),
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.grey.shade300,
-                ),
-              ),
-              TextButton(
-                child: const Text("Watch Ad"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  _showRewardedAd();
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.orangeAccent,
-                ),
-              ),
-            ],
           ),
+          TextButton(
+            child: const Text("Watch Ad"),
+            onPressed: () {
+              Navigator.of(context).pop();
+              _showRewardedAd();
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.orangeAccent,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -421,9 +416,9 @@ class _ChatScreenState extends State<ChatScreen> {
                   emojiSet: null,
                   emojiTextStyle: TextStyle(fontSize: 32, color: Colors.white),
                   customSearchIcon:
-                  const Icon(Icons.search, color: Colors.white),
+                      const Icon(Icons.search, color: Colors.white),
                   customBackspaceIcon:
-                  const Icon(Icons.close, color: Colors.white),
+                      const Icon(Icons.close, color: Colors.white),
                   emojiViewConfig: EmojiViewConfig(
                     columns: 7,
                     emojiSizeMax: 32.0,
@@ -436,7 +431,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     noRecents: Text(
                       'No Recents',
                       style:
-                      TextStyle(fontSize: 20, color: Colors.grey.shade400),
+                          TextStyle(fontSize: 20, color: Colors.grey.shade400),
                       textAlign: TextAlign.center,
                     ),
                     loadingIndicator: SizedBox.shrink(),
@@ -471,7 +466,6 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {
       _isLoading = true;
     });
-
 
     try {
       final api = Api();
@@ -532,8 +526,7 @@ class _ChatScreenState extends State<ChatScreen> {
         _messageCount++;
         _saveMessageCount(_messageCount);
       });
-    }
-    catch (e) {
+    } catch (e) {
       setState(() {
         _isLoading = false;
       });
@@ -663,7 +656,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     Transform.scale(
                         child: CircularProgressIndicator(
                           valueColor:
-                          AlwaysStoppedAnimation<Color>(AppColors.accent),
+                              AlwaysStoppedAnimation<Color>(AppColors.accent),
                           strokeWidth: 6,
                         ),
                         scale: 0.5),

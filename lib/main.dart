@@ -3,6 +3,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:horoscopeguruapp/screens/chat_screen.dart';
 import 'package:horoscopeguruapp/screens/home_screen.dart';
 import 'package:horoscopeguruapp/screens/login_screen.dart';
+import 'package:horoscopeguruapp/screens/user_profile_screen.dart';
 import 'package:horoscopeguruapp/theme/colors.dart';
 
 void main() async {
@@ -41,6 +42,7 @@ class MyApp extends StatelessWidget {
         '/': (context) => LoginPage(),
         '/home': (context) => const HomeScreen(), // Create this page
         '/chat': (context) => const ChatScreen(), // Create this page
+        '/userProfile': (context) => const UserProfileScreen(),
       },
     );
   }
