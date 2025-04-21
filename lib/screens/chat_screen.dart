@@ -320,7 +320,7 @@ class _ChatScreenState extends State<ChatScreen> {
         Container(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
           decoration: BoxDecoration(
-            color: AppColors.primaryDark,
+            color: AppColors.primaryDarkE,
             borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(0),
               bottomRight: Radius.circular(0),
@@ -361,7 +361,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                       IconButton(
                         icon: Icon(Icons.emoji_emotions_outlined,
-                            color: textColor.withOpacity(0.7)),
+                            color: AppColors.accent),
                         onPressed: () {
                           setState(() {
                             _isEmojiPickerVisible = !_isEmojiPickerVisible;
@@ -585,12 +585,12 @@ class _ChatScreenState extends State<ChatScreen> {
             )
           ],
         ),
-        // actions: [
-        //   IconButton(
-        //     icon: Icon(Icons.more_vert, color: textColor.withOpacity(0.8)),
-        //     onPressed: () {},
-        //   ),
-        // ],
+        actions: [
+          IconButton(
+            icon: Icon(Icons.more_vert, color: AppColors.accent),
+            onPressed: () {},
+          ),
+        ],
       ),
       body: SafeArea(
         child: Column(

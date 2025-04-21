@@ -86,5 +86,7 @@
   "birthPlaceLabel": "Birth Place:",
   "birthTimeLabel": "Birth Time:",
   "notSet": "Not set",
-  "notSetOptional": "Not set (optional)"
+  "notSetOptional": "Not set (optional)",
+  "languageEnglish": "English",
+  "languageTurkish": "Turkish"
 } 

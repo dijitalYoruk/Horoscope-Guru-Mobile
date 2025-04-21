@@ -327,9 +327,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                           (String value) {
                                     return DropdownMenuItem<String>(
                                       value: value,
-                                      child: Text(value == 'en'
-                                          ? 'English'
-                                          : 'Turkish'),
+                                      child: Text(
+                                        value == 'en'
+                                            ? localizations.languageEnglish
+                                            : localizations.languageTurkish,
+                                      ),
                                     );
                                   }).toList(),
                                 ),
