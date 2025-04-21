@@ -4,6 +4,8 @@ import 'package:horoscopeguruapp/screens/chat_screen.dart';
 import 'dart:math';
 import 'package:intl/intl.dart';
 import 'package:flutter/widgets.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:horoscopeguruapp/api/api.dart';
 import 'package:horoscopeguruapp/theme/colors.dart';
@@ -85,6 +87,18 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     setState(() {
       _userData = userData;
     });
+  }
+
+  Future<void> _handleSignOut() async {
+    // Clear user data or tokens here
+    // For example, using SharedPreferences:
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('access_token');
+
+    // Navigate to login screen
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/');
+    }
   }
 
   Widget _buildDailyLaughterCard() {
@@ -175,7 +189,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.question_answer, color: AppColors.accent),
+                      const Icon(Icons.question_answer,
+                          color: AppColors.accent),
                       const SizedBox(width: 8),
                       const Text(
                         'Your Cosmic Questions',
@@ -231,8 +246,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.calendar_today,
-                                  size: 12, color: AppColors.accent,),
+                              Icon(
+                                Icons.calendar_today,
+                                size: 12,
+                                color: AppColors.accent,
+                              ),
                               SizedBox(width: 4),
                               Text(
                                 DateFormat('MMM d').format(chat.updatedAt),
@@ -247,8 +265,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.access_time,
-                                  size: 12, color: AppColors.accent,),
+                              Icon(
+                                Icons.access_time,
+                                size: 12,
+                                color: AppColors.accent,
+                              ),
                               SizedBox(width: 4),
                               Text(
                                 DateFormat('HH:mm').format(chat.updatedAt),
@@ -500,15 +521,37 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Horoscope Guru',
-                          style: TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.accent,
-                            letterSpacing: 1.1,
-                          ),
-                        ),
+                        // put an Icon
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Horoscope Guru',
+                                style: TextStyle(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.accent,
+                                  letterSpacing: 1.1,
+                                ),
+                              ),
+
+                                GestureDetector(
+                                  onTap: _handleSignOut,
+                                  child: Container(
+                                    padding: EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(20))),
+                                    child: FaIcon(
+                                      FontAwesomeIcons.signOutAlt,
+                                      color: AppColors.accent,
+                                      size: 24,
+                                    ),
+                                  ),
+                                ),
+
+                            ]),
                         SizedBox(
                           height: 4,
                         ),
