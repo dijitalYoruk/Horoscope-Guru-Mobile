@@ -44,6 +44,7 @@ class MyApp extends StatelessWidget {
         '/chat': (context) => const ChatScreen(), // Create this page
         '/userProfile': (context) => const UserProfileScreen(),
       },
+      navigatorObservers: [routeObserver],
     );
   }
 }

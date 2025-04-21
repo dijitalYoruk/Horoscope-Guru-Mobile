@@ -39,11 +39,15 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   // Expanded Chat History Data (20 items)
   List<Chat> _chatHistory = [];
 
+  // User data
+  User? _userData;
+
   @override
   void initState() {
     super.initState();
     _funnyAstroQuote = _astroQuotes[Random().nextInt(_astroQuotes.length)];
     getUserChats();
+    _getUserData();
   }
 
   @override
@@ -62,6 +66,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   void didPopNext() {
     // Refetch user chats when returning to this screen
     getUserChats();
+    _getUserData();
   }
 
   Future<void> getUserChats() async {
@@ -70,6 +75,15 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
     setState(() {
       _chatHistory = response.chats;
+    });
+  }
+
+  Future<void> _getUserData() async {
+    var api = Api();
+    final userData = await api.getUser(context);
+
+    setState(() {
+      _userData = userData;
     });
   }
 
@@ -87,21 +101,27 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'TODAY\'S COSMIC COMEDY',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.5,
-            ),
+          Row(
+            children: [
+              const Icon(Icons.sentiment_satisfied, color: AppColors.accent),
+              const SizedBox(width: 8),
+              const Text(
+                'TODAY\'S COSMIC COMEDY',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 15),
+          const SizedBox(height: 8),
           Text(
             _funnyAstroQuote,
             style: TextStyle(
               color: textColor,
-              fontSize: 16,
+              fontSize: 15,
               height: 1.5,
             ),
           ),
@@ -111,13 +131,14 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               const Text(
                 'Refresh for cosmic wisdom',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.accent,
                   fontSize: 12,
                   fontStyle: FontStyle.italic,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.refresh, color: Colors.white),
+                icon: Icon(Icons.refresh, color: AppColors.accent),
                 onPressed: () {
                   setState(() {
                     _funnyAstroQuote =
@@ -148,23 +169,29 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
         child: Column(
           children: [
             Padding(
-              padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+              padding: EdgeInsets.fromLTRB(20, 10, 20, 0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Your Cosmic Questions',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    children: [
+                      const Icon(Icons.question_answer, color: AppColors.accent),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Your Cosmic Questions',
+                        style: TextStyle(
+                          color: AppColors.textColor,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                   TextButton(
                     onPressed: () {},
                     child: const Text(
                       'View All',
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(color: AppColors.accent),
                     ),
                   ),
                 ],
@@ -205,12 +232,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.calendar_today,
-                                  size: 12, color: secondaryTextColor),
+                                  size: 12, color: AppColors.accent,),
                               SizedBox(width: 4),
                               Text(
                                 DateFormat('MMM d').format(chat.updatedAt),
                                 style: TextStyle(
-                                  color: secondaryTextColor,
+                                  color: AppColors.accent,
                                   fontSize: 12,
                                 ),
                               ),
@@ -221,12 +248,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.access_time,
-                                  size: 12, color: secondaryTextColor),
+                                  size: 12, color: AppColors.accent,),
                               SizedBox(width: 4),
                               Text(
                                 DateFormat('HH:mm').format(chat.updatedAt),
                                 style: TextStyle(
-                                  color: secondaryTextColor,
+                                  color: AppColors.accent,
                                   fontSize: 12,
                                 ),
                               ),
@@ -254,6 +281,186 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     );
   }
 
+  Widget _buildUserInfoBanner() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.6),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(11),
+                topRight: Radius.circular(11),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.person, color: Colors.orange, size: 16),
+                const SizedBox(width: 6),
+                Text(
+                  'PROFILE',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+                Spacer(),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, '/userProfile');
+                  },
+                  child: Text(
+                    'Edit',
+                    style: TextStyle(
+                      color: Colors.orange,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            color: AppColors.accent,
+            height: 1,
+            width: double.infinity,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: _userData == null
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: CircularProgressIndicator(
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Colors.orange),
+                        strokeWidth: 2,
+                      ),
+                    ),
+                  )
+                : Column(
+                    children: [
+                      _buildUserInfoRow(
+                        icon: Icons.calendar_today,
+                        label: 'Birth Date:',
+                        value: _userData?.birthDate?.isNotEmpty == true
+                            ? _userData!.birthDate!
+                            : 'Not set',
+                        isComplete: _userData?.birthDate?.isNotEmpty == true,
+                      ),
+                      _buildUserInfoRow(
+                        icon: Icons.place,
+                        label: 'Birth Place:',
+                        value: _userData?.birthPlace?.isNotEmpty == true
+                            ? _userData!.birthPlace!
+                            : 'Not set',
+                        isComplete: _userData?.birthPlace?.isNotEmpty == true,
+                      ),
+                      _buildUserInfoRow(
+                        icon: Icons.access_time,
+                        label: 'Birth Time:',
+                        value: _userData?.birthTime?.isNotEmpty == true
+                            ? _userData!.birthTime!
+                            : 'Not set (optional)',
+                        isComplete: _userData?.birthTime?.isNotEmpty == true,
+                        isRequired: false,
+                      ),
+                    ],
+                  ),
+          ),
+          if (_userData != null &&
+              (_userData!.birthDate == null ||
+                  _userData!.birthDate!.isEmpty ||
+                  _userData!.birthPlace == null ||
+                  _userData!.birthPlace!.isEmpty))
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.2),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(11),
+                  bottomRight: Radius.circular(11),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.warning_amber_rounded,
+                      color: Colors.orange, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Complete your cosmic profile to receive accurate predictions',
+                      style: TextStyle(
+                        color: Colors.orange,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserInfoRow({
+    required IconData icon,
+    required String label,
+    required String value,
+    required bool isComplete,
+    bool isRequired = true,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            icon,
+            size: 14,
+            color: isComplete
+                ? AppColors.accent
+                : (isRequired ? Colors.red : Colors.grey.shade400),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                color: isComplete
+                    ? Colors.white
+                    : (isRequired ? Colors.orange : Colors.grey.shade400),
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final backgroundColor = AppColors.primaryDark;
@@ -267,7 +474,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           children: [
             // App Header
             Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.only(
+                  left: 20.0, right: 20.0, top: 10, bottom: 20),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -281,20 +489,33 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                       borderRadius: BorderRadius.circular(8.0),
                       child: Image.asset(
                         'assets/images/logo.png',
-                        width: 100.0,
+                        width: 80.0,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 15),
-                  Text(
-                    'Horoscope Guru',
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w800,
-                      color: textColor,
-                      letterSpacing: 1.1,
-                    ),
+                  const SizedBox(
+                    width: 16,
                   ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Horoscope Guru',
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.accent,
+                            letterSpacing: 1.1,
+                          ),
+                        ),
+                        SizedBox(
+                          height: 4,
+                        ),
+                        _buildUserInfoBanner(),
+                      ],
+                    ),
+                  )
                 ],
               ),
             ),
@@ -308,7 +529,20 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/userProfile');
+                  if (_userData == null ||
+                      _userData?.birthDate == null ||
+                      _userData!.birthDate!.isEmpty ||
+                      _userData?.birthPlace == null ||
+                      _userData!.birthPlace!.isEmpty) {
+                    Navigator.pushNamed(context, '/userProfile');
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChatScreen(),
+                      ),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accent,

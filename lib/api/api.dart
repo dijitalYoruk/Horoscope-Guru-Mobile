@@ -138,8 +138,8 @@ class GetChatResponse {
       GetChatResponse(
         chatId: json['chatId'],
         chatTitle: json['chatTitle'],
-        createdAt: DateTime.parse(json['createdAt']),
-        updatedAt: DateTime.parse(json['updatedAt']),
+        createdAt: HttpDate.parse(json['createdAt']),
+        updatedAt: HttpDate.parse(json['updatedAt']),
         chatMessages: List<ChatMessage>.from(
           json['chatMessages'].map((msg) => ChatMessage.fromJson(msg)),
         ),
@@ -381,6 +381,7 @@ class Api {
     if (checkAuth && e.response?.statusCode == 401) {
       var prefs = await SharedPreferences.getInstance();
       await prefs.remove("access_token");
+
 
       Navigator.pushAndRemoveUntil(
         context,

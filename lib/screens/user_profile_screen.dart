@@ -46,7 +46,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         surname: _surnameController.text,
         birthPlace: _birthPlaceController.text,
         birthDate: _birthDateController.text,
-        birthTime: _birthTimeController.text.isEmpty ? null : _birthTimeController.text,
+        birthTime: _birthTimeController.text.isEmpty
+            ? null
+            : _birthTimeController.text,
       );
 
       await api.updateUser(request, context);

@@ -547,7 +547,7 @@ class _ChatScreenState extends State<ChatScreen> {
         toolbarHeight: 84,
         systemOverlayStyle: SystemUiOverlayStyle.light,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: textColor),
+          icon: Icon(Icons.arrow_back, color: AppColors.accent),
           onPressed: () => Navigator.pop(context),
         ),
         title: Column(
@@ -583,12 +583,12 @@ class _ChatScreenState extends State<ChatScreen> {
             )
           ],
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.more_vert, color: textColor.withOpacity(0.8)),
-            onPressed: () {},
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: Icon(Icons.more_vert, color: textColor.withOpacity(0.8)),
+        //     onPressed: () {},
+        //   ),
+        // ],
       ),
       body: SafeArea(
         child: Column(
