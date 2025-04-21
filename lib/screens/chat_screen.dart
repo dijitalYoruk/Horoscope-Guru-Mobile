@@ -265,7 +265,7 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             Icon(Icons.star_rounded, size: 36, color: Colors.amberAccent),
             const SizedBox(width: 10),
-            const Text("Watch an Ad"),
+            Text(AppLocalizations.of(context)!.watchAnAd),
           ],
         ),
         titleTextStyle: TextStyle(
@@ -273,8 +273,8 @@ class _ChatScreenState extends State<ChatScreen> {
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
-        content: const Text(
-          "Watch a short ad to unlock 4 more messages.",
+        content: Text(
+          AppLocalizations.of(context)!.watchAdToUnlockMessages,
         ),
         contentTextStyle: TextStyle(
           color: Colors.grey,
@@ -282,14 +282,14 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         actions: [
           TextButton(
-            child: const Text("Cancel"),
+            child: Text(AppLocalizations.of(context)!.cancel),
             onPressed: () => Navigator.of(context).pop(),
             style: TextButton.styleFrom(
               foregroundColor: Colors.grey.shade300,
             ),
           ),
           TextButton(
-            child: const Text("Watch Ad"),
+            child: Text(AppLocalizations.of(context)!.watchAd),
             onPressed: () {
               Navigator.of(context).pop();
               _showRewardedAd();
@@ -342,7 +342,8 @@ class _ChatScreenState extends State<ChatScreen> {
                           focusNode: _messageFocusNode,
                           style: TextStyle(color: textColor),
                           decoration: InputDecoration.collapsed(
-                            hintText: "Type your message...",
+                            hintText:
+                                AppLocalizations.of(context)!.typeYourMessage,
                             hintStyle: TextStyle(
                               color: Colors.grey.shade400,
                               fontSize: 15,
@@ -430,7 +431,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     recentsLimit: 28,
                     replaceEmojiOnLimitExceed: false,
                     noRecents: Text(
-                      'No Recents',
+                      AppLocalizations.of(context)!.noRecents,
                       style:
                           TextStyle(fontSize: 20, color: Colors.grey.shade400),
                       textAlign: TextAlign.center,
@@ -570,7 +571,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'Horoscope Guru',
+                  AppLocalizations.of(context)!.horoscopeGuru,
                   style: TextStyle(
                     color: textColor,
                     fontWeight: FontWeight.w600,
@@ -649,32 +650,21 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             if (_isProcessingMessage)
               Container(
-                width: double.infinity,
-                color: AppColors.accent.withOpacity(0.1),
+                padding: const EdgeInsets.all(16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Transform.scale(
-                        child: CircularProgressIndicator(
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(AppColors.accent),
-                          strokeWidth: 6,
-                        ),
-                        scale: 0.5),
+                  children: const [
+                    CircularProgressIndicator(),
+                    SizedBox(width: 16),
                     Text(
-                      'The Guru is thinking... Please wait.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: AppColors.accent,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      'Processing...',
+                      style: TextStyle(color: Colors.white),
                     ),
                   ],
                 ),
               ),
             if (_isInputAreaVisible)
-              _buildInputArea(textColor, AppColors.primary),
+              _buildInputArea(textColor, AppColors.accent),
           ],
         ),
       ),

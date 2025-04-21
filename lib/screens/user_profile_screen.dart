@@ -21,6 +21,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   bool _showValidationErrors = false;
   User? _user;
+  String _selectedLanguage = 'en'; // Default language
 
   bool get _isFormValid =>
       _nameController.text.isNotEmpty &&
@@ -29,8 +30,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       _birthPlaceController.text.isNotEmpty;
 
   String? _getErrorText(String value, String fieldName) {
+    final localizations = AppLocalizations.of(context)!;
     if (_showValidationErrors && value.isEmpty) {
-      return '$fieldName is required';
+      return '[31m$fieldName ${localizations.isRequired}[0m';
     }
     return null;
   }
@@ -55,14 +57,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       await api.updateUser(request, context);
 
       Fluttertoast.showToast(
-        msg: 'Profile Updated',
+        msg: AppLocalizations.of(context)!.profileUpdated,
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         backgroundColor: AppColors.accent,
         textColor: Colors.white,
         fontSize: 16.0,
       );
-
       Navigator.pop(context);
     }
   }
@@ -238,8 +239,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Header section
-                        const Text(
-                          'Tell the Stars About Yourself',
+                        Text(
+                          localizations.tellTheStarsAboutYourself,
                           style: TextStyle(
                             color: Colors.orange,
                             fontSize: 24,
@@ -267,7 +268,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                               SizedBox(width: 12),
                               Expanded(
                                 child: Text(
-                                  'Birth date and place are required to chat with the guru. Without these cosmic coordinates, the guru cannot connect with your astral energy.',
+                                  localizations.birthDateAndPlaceRequired,
                                   style: TextStyle(
                                     color: Colors.orange,
                                     fontSize: 14,
@@ -279,6 +280,56 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           ),
                         ),
                         const SizedBox(height: 30),
+
+                        // Language selection dropdown
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                                color: Colors.grey.withOpacity(0.3), width: 1),
+                          ),
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.language,
+                                  color: Colors.orange, size: 24),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: DropdownButton<String>(
+                                  value: _selectedLanguage,
+                                  dropdownColor: AppColors.primaryDark,
+                                  icon: const Icon(Icons.arrow_downward,
+                                      color: Colors.orange),
+                                  iconSize: 24,
+                                  elevation: 16,
+                                  style: const TextStyle(color: Colors.white),
+                                  underline: Container(
+                                    height: 2,
+                                    color: Colors.orange,
+                                  ),
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      _selectedLanguage = newValue!;
+                                      // Add logic to change app language here
+                                    });
+                                  },
+                                  items: <String>['en', 'tr']
+                                      .map<DropdownMenuItem<String>>(
+                                          (String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value == 'en'
+                                          ? 'English'
+                                          : 'Turkish'),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
 
                         // Email field
                         Container(
@@ -300,7 +351,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                   enabled: false,
                                   style: const TextStyle(color: Colors.white),
                                   decoration: InputDecoration(
-                                    labelText: 'Email',
+                                    labelText: localizations.email,
                                     labelStyle:
                                         const TextStyle(color: Colors.white70),
                                     border: InputBorder.none,
@@ -331,8 +382,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 child: TextField(
                                   controller: _nameController,
                                   style: const TextStyle(color: Colors.white),
-                                  decoration:
-                                      _getInputDecoration(labelText: 'Name'),
+                                  decoration: _getInputDecoration(
+                                      labelText: localizations.name),
                                   onChanged: (_) => setState(() {}),
                                 ),
                               ),
@@ -359,8 +410,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 child: TextField(
                                   controller: _surnameController,
                                   style: const TextStyle(color: Colors.white),
-                                  decoration:
-                                      _getInputDecoration(labelText: 'Surname'),
+                                  decoration: _getInputDecoration(
+                                      labelText: localizations.surname),
                                   onChanged: (_) => setState(() {}),
                                 ),
                               ),
@@ -378,8 +429,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                               left: BorderSide(color: Colors.orange, width: 3),
                             ),
                           ),
-                          child: const Text(
-                            'YOUR COSMIC COORDINATES',
+                          child: Text(
+                            localizations.yourCosmicCoordinates,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 14,
@@ -410,8 +461,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                   readOnly: true,
                                   style: const TextStyle(color: Colors.white),
                                   decoration: _getInputDecoration(
-                                    labelText: 'Birth Date',
-                                    hintText: 'Select date',
+                                    labelText: localizations.birthDate,
+                                    hintText: localizations.selectDate,
                                   ),
                                   onTap: () => _selectDate(context),
                                 ),
@@ -445,8 +496,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                   controller: _birthPlaceController,
                                   style: const TextStyle(color: Colors.white),
                                   decoration: _getInputDecoration(
-                                    labelText: 'Birth Place',
-                                    hintText: 'City, Country',
+                                    labelText: localizations.birthPlace,
+                                    hintText: localizations.cityCountry,
                                   ),
                                   onChanged: (_) => setState(() {}),
                                 ),
@@ -480,8 +531,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                       style:
                                           const TextStyle(color: Colors.white),
                                       decoration: _getInputDecoration(
-                                        labelText: 'Birth Time (optional)',
-                                        hintText: 'Select time',
+                                        labelText:
+                                            localizations.birthTimeOptional,
+                                        hintText: localizations.selectTime,
                                         showError: false,
                                       ),
                                       onTap: () => _selectTime(context),
@@ -497,7 +549,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                               Padding(
                                 padding: const EdgeInsets.only(left: 40),
                                 child: Text(
-                                  'Providing a time helps the guru predict with greater accuracy',
+                                  localizations.providingTimeHelps,
                                   style: TextStyle(
                                     color: Colors.orange.shade300,
                                     fontSize: 12,
@@ -542,8 +594,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       ),
                       elevation: 3,
                     ),
-                    child: const Text(
-                      'Update My Cosmic Profile',
+                    child: Text(
+                      localizations.updateMyCosmicProfile,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
