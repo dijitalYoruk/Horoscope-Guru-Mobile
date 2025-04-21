@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:horoscopeguruapp/screens/chat_screen.dart';
 import 'dart:math';
 import 'package:intl/intl.dart';
+import 'package:flutter/widgets.dart';
 
 import 'package:horoscopeguruapp/api/api.dart';
 import 'package:horoscopeguruapp/theme/colors.dart';
@@ -12,7 +15,7 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with RouteAware {
   // Daily Laughter Card Component
   late String _funnyAstroQuote;
   final List<String> _astroQuotes = [
@@ -43,13 +46,31 @@ class _HomeScreenState extends State<HomeScreen> {
     getUserChats();
   }
 
-  Future<void> getUserChats() async {
-     var api = Api();
-      var response = await api.getAllUserChats(context);
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute<dynamic>);
+  }
 
-      setState(() {
-        _chatHistory = response.chats;
-      });
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    // Refetch user chats when returning to this screen
+    getUserChats();
+  }
+
+  Future<void> getUserChats() async {
+    var api = Api();
+    var response = await api.getAllUserChats(context);
+
+    setState(() {
+      _chatHistory = response.chats;
+    });
   }
 
   Widget _buildDailyLaughterCard() {
@@ -213,7 +234,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ],
                       ),
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  ChatScreen(chatId: chat.chatId),
+                            ));
+                      },
                     ),
                   );
                 },
@@ -317,3 +345,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
+// Define a RouteObserver to be used in the app
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();

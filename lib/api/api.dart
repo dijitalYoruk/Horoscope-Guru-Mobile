@@ -87,6 +87,33 @@ class PostChatResponse {
       );
 }
 
+class GetChatResponse {
+  final String chatId;
+  final String chatTitle;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final List<ChatMessage> chatMessages;
+
+  GetChatResponse({
+    required this.chatId,
+    required this.chatTitle,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.chatMessages,
+  });
+
+  factory GetChatResponse.fromJson(Map<String, dynamic> json) =>
+      GetChatResponse(
+        chatId: json['chatId'],
+        chatTitle: json['chatTitle'],
+        createdAt: HttpDate.parse(json['createdAt']),
+        updatedAt: HttpDate.parse(json['updatedAt']),
+        chatMessages: List<ChatMessage>.from(
+          json['chatMessages'].map((msg) => ChatMessage.fromJson(msg)),
+        ),
+      );
+}
+
 class GenerateChatTitleResponse {
   final String title;
 
@@ -216,7 +243,8 @@ class Api {
     }
   }
 
-  Future<PostChatResponse> sendMessageToChat(PostChatRequest request, BuildContext context) async {
+  Future<PostChatResponse> sendMessageToChat(
+      PostChatRequest request, BuildContext context) async {
     try {
       var accessToken = await getAccessToken(context);
       final response = await _dio.post(
@@ -234,31 +262,40 @@ class Api {
   Future<GetAllUserChatsResponse> getAllUserChats(BuildContext context) async {
     try {
       var accessToken = await getAccessToken(context);
-      Fluttertoast.showToast(
-        msg: accessToken ?? "",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        backgroundColor: AppColors.accent,
-        textColor: Colors.white,
-        fontSize: 16.0,
-      );
       final response = await _dio.get(
-      '/chat',
-      options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
-    );
-    return GetAllUserChatsResponse.fromJson(response.data);
+        '/chat',
+        options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+      );
+      return GetAllUserChatsResponse.fromJson(response.data);
     } catch (exp) {
       handleApiError(exp, context);
       rethrow;
     }
   }
 
-  Future<GenerateChatTitleResponse?> generateChatTitle(String chatId, BuildContext context) async {
+  Future<GetChatResponse> getChatById(
+      String chatId, BuildContext context) async {
     try {
       var accessToken = await getAccessToken(context);
       final response = await _dio.get(
-          '/chat/$chatId/generate/title',
-          options: Options(headers: {'Authorization': 'Bearer $accessToken'}),);
+        '/chat/$chatId',
+        options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+      );
+      return GetChatResponse.fromJson(response.data);
+    } catch (exp) {
+      handleApiError(exp, context);
+      rethrow;
+    }
+  }
+
+  Future<GenerateChatTitleResponse> generateChatTitle(
+      String chatId, BuildContext context) async {
+    try {
+      var accessToken = await getAccessToken(context);
+      final response = await _dio.get(
+        '/chat/$chatId/generate/title',
+        options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+      );
       return GenerateChatTitleResponse.fromJson(response.data);
     } catch (exp) {
       handleApiError(exp, context);
@@ -274,15 +311,16 @@ class Api {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => LoginPage()),
-            (route) => false,
+        (route) => false,
       );
     }
 
     return accessToken;
   }
 
-  void handleApiError(dynamic e, BuildContext context, [bool checkAuth = true]) async {
-    if (checkAuth && e.response.statusCode == 401) {
+  void handleApiError(dynamic e, BuildContext context,
+      [bool checkAuth = true]) async {
+    if (checkAuth && e.response?.statusCode == 401) {
       var prefs = await SharedPreferences.getInstance();
       await prefs.remove("access_token");
 
@@ -295,7 +333,7 @@ class Api {
     }
 
     Fluttertoast.showToast(
-      msg: e.response!.statusCode.toString(),
+      msg: e.response?.statusCode.toString() ?? 'Unknown error',
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
       backgroundColor: AppColors.accent,

@@ -144,17 +144,20 @@ class _ChatScreenState extends State<ChatScreen> {
     });
 
     if (_chatId != null) {
-      
-
-
-    }
-
-    _startNewChat().then((_) {
-      // Set input area visible after loading
-      setState(() {
-        _isInputAreaVisible = true;
+      _getChatById().then((_) {
+        // Set input area visible after loading
+        setState(() {
+          _isInputAreaVisible = true;
+        });
       });
-    });
+    } else {
+      _startNewChat().then((_) {
+        // Set input area visible after loading
+        setState(() {
+          _isInputAreaVisible = true;
+        });
+      });
+    }
   }
 
   Future<void> _loadMessageCount() async {
@@ -465,18 +468,37 @@ class _ChatScreenState extends State<ChatScreen> {
   var _isLoading = false;
 
   Future<void> _startNewChat() async {
-      setState(() {
-        _isLoading = true;
-      });
+    setState(() {
+      _isLoading = true;
+    });
 
 
-      try {
-
-        final api = Api();
+    try {
+      final api = Api();
       final response = await api.startChat(context);
 
       setState(() {
         _messages.add(response.message);
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _getChatById() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final api = Api();
+      final response = await api.getChatById(_chatId!, context);
+
+      setState(() {
+        _messages.addAll(response.chatMessages);
         _isLoading = false;
       });
     } catch (e) {
@@ -518,149 +540,150 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-@override
-Widget build(BuildContext context) {
-  final backgroundColor = AppColors.primaryDark;
-  final textColor = AppColors.textColor;
+  @override
+  Widget build(BuildContext context) {
+    final backgroundColor = AppColors.primaryDark;
+    final textColor = AppColors.textColor;
 
-  return Scaffold(
-    backgroundColor: AppColors.primary,
-    extendBody: true,
-    appBar: AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      toolbarHeight: 84,
-      systemOverlayStyle: SystemUiOverlayStyle.light,
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back, color: textColor),
-        onPressed: () => Navigator.pop(context),
-      ),
-      title: Column(
-        children: [
-          SizedBox(
-            height: 10,
-          ),
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                    color: AppColors.primaryDark,
-                    borderRadius: BorderRadius.all(Radius.circular(64))),
-                child: Image.asset(
-                  'assets/images/logo.png',
-                  height: 64,
+    return Scaffold(
+      backgroundColor: AppColors.primary,
+      extendBody: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        toolbarHeight: 84,
+        systemOverlayStyle: SystemUiOverlayStyle.light,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: textColor),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Column(
+          children: [
+            SizedBox(
+              height: 10,
+            ),
+            Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                      color: AppColors.primaryDark,
+                      borderRadius: BorderRadius.all(Radius.circular(64))),
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    height: 64,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Horoscope Guru',
-                style: TextStyle(
-                  color: textColor,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 18,
+                const SizedBox(width: 12),
+                Text(
+                  'Horoscope Guru',
+                  style: TextStyle(
+                    color: textColor,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
+            SizedBox(
+              height: 10,
+            )
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.more_vert, color: textColor.withOpacity(0.8)),
+            onPressed: () {},
           ),
-          SizedBox(
-            height: 10,
-          )
         ],
       ),
-      actions: [
-        IconButton(
-          icon: Icon(Icons.more_vert, color: textColor.withOpacity(0.8)),
-          onPressed: () {},
-        ),
-      ],
-    ),
-    body: SafeArea(
-      child: Column(
-        children: [
-          if (_isLoading)
-            Expanded(
-              child: Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
-                ),
-              ),
-            )
-          else
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: backgroundColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(24),
-                    topRight: Radius.circular(24),
+      body: SafeArea(
+        child: Column(
+          children: [
+            if (_isLoading)
+              Expanded(
+                child: Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
-                      blurRadius: 10,
-                      spreadRadius: 2,
-                    ),
-                  ],
                 ),
-                child: ClipRRect(
+              )
+            else
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: backgroundColor,
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(24),
                       topRight: Radius.circular(24),
                     ),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 16),
-                        Expanded(
-                          child: ListView.builder(
-                            reverse: true,
-                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                            itemCount: _messages.length,
-                            itemBuilder: (context, index) {
-                              return ChatBubble(
-                                message: _messages[index],
-                                userBubbleColor: AppColors.accent,
-                                aiBubbleColor: AppColors.primary,
-                                textColor: textColor,
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                    )),
-              ),
-            ),
-          if (_isProcessingMessage)
-            Container(
-              width: double.infinity,
-              color: AppColors.accent.withOpacity(0.1),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Transform.scale(
-                      child: CircularProgressIndicator(
-                        valueColor:
-                        AlwaysStoppedAnimation<Color>(AppColors.accent),
-                        strokeWidth: 6,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 10,
+                        spreadRadius: 2,
                       ),
-                      scale: 0.5),
-                  Text(
-                    'The Guru is thinking... Please wait.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppColors.accent,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    ],
                   ),
-                ],
+                  child: ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(24),
+                        topRight: Radius.circular(24),
+                      ),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 16),
+                          Expanded(
+                            child: ListView.builder(
+                              reverse: true,
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                              itemCount: _messages.length,
+                              itemBuilder: (context, index) {
+                                return ChatBubble(
+                                  message: _messages[index],
+                                  userBubbleColor: AppColors.accent,
+                                  aiBubbleColor: AppColors.primary,
+                                  textColor: textColor,
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      )),
+                ),
               ),
-            ),
-          if (_isInputAreaVisible)
-            _buildInputArea(textColor, AppColors.primary),
-        ],
+            if (_isProcessingMessage)
+              Container(
+                width: double.infinity,
+                color: AppColors.accent.withOpacity(0.1),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Transform.scale(
+                        child: CircularProgressIndicator(
+                          valueColor:
+                          AlwaysStoppedAnimation<Color>(AppColors.accent),
+                          strokeWidth: 6,
+                        ),
+                        scale: 0.5),
+                    Text(
+                      'The Guru is thinking... Please wait.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppColors.accent,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (_isInputAreaVisible)
+              _buildInputArea(textColor, AppColors.primary),
+          ],
+        ),
       ),
-    ),
-  );
-}}
+    );
+  }
+}
