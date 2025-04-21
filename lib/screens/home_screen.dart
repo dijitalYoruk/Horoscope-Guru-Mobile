@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:horoscopeguruapp/screens/chat_screen.dart';
 import 'dart:math';
 import 'package:intl/intl.dart';
@@ -7,7 +6,6 @@ import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:horoscopeguruapp/widgets/language_selector.dart';
 import 'package:horoscopeguruapp/main.dart'
     as mainApp; // Import for the changeLocale function
 
@@ -97,6 +95,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     setState(() {
       _userData = userData;
     });
+
+    mainApp.changeLocale(
+        context, userData.preferredLanguage);
   }
 
   Future<void> _handleSignOut() async {
@@ -138,9 +139,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               const Icon(Icons.sentiment_satisfied, color: AppColors.accent),
               const SizedBox(width: 8),
               Text(
-                currentLocale.languageCode == 'tr'
-                    ? 'GÜNÜN KOZMİK KOMEDİSİ'
-                    : 'TODAY\'S COSMIC COMEDY',
+                localizations.todaysCosmicComedy,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 14,
@@ -150,6 +149,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               ),
             ],
           ),
+
           const SizedBox(height: 8),
           Text(
             quote,
@@ -163,9 +163,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                currentLocale.languageCode == 'tr'
-                    ? 'Kozmik bilgelik için yenileyin'
-                    : 'Refresh for cosmic wisdom',
+                localizations.refreshForCosmicWisdom,
                 style: TextStyle(
                   color: AppColors.accent,
                   fontSize: 12,
@@ -217,9 +215,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                           color: AppColors.accent),
                       const SizedBox(width: 8),
                       Text(
-                        currentLocale.languageCode == 'tr'
-                            ? 'Kozmik Sorularınız'
-                            : 'Your Cosmic Questions',
+                        localizations.yourCosmicQuestions,
                         style: TextStyle(
                           color: AppColors.textColor,
                           fontSize: 18,
@@ -233,17 +229,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                       TextButton(
                         onPressed: () {},
                         child: Text(
-                          currentLocale.languageCode == 'tr'
-                              ? 'Hepsini Gör'
-                              : 'View All',
+                          localizations.viewAll,
                           style: TextStyle(color: AppColors.accent),
                         ),
-                      ),
-                      // Language selector
-                      LanguageSelector(
-                        onLanguageChanged: (String languageCode) {
-                          mainApp.changeLocale(context, languageCode);
-                        },
                       ),
                     ],
                   ),
@@ -254,9 +242,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               child: _chatHistory.isEmpty
                   ? Center(
                       child: Text(
-                        currentLocale.languageCode == 'tr'
-                            ? 'Henüz kozmik soru alınmadı.'
-                            : 'No cosmic questions received yet.',
+                        localizations.noCosmicQuestionsReceivedYet,
                         style: TextStyle(
                           color: secondaryTextColor,
                           fontSize: 16,
@@ -400,7 +386,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                 Icon(Icons.person, color: Colors.orange, size: 16),
                 const SizedBox(width: 6),
                 Text(
-                  currentLocale.languageCode == 'tr' ? 'PROFİL' : 'PROFILE',
+                  localizations.profile,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 12,
@@ -414,7 +400,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                     Navigator.pushNamed(context, '/userProfile');
                   },
                   child: Text(
-                    currentLocale.languageCode == 'tr' ? 'Düzenle' : 'Edit',
+                    localizations.edit,
                     style: TextStyle(
                       color: Colors.orange,
                       fontSize: 12,
@@ -447,7 +433,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                     children: [
                       _buildUserInfoRow(
                         icon: Icons.calendar_today,
-                        label: 'Birth Date:',
+                        label: localizations.birthDateLabel,
                         value: _userData?.birthDate?.isNotEmpty == true
                             ? _userData!.birthDate!
                             : 'Not set',
@@ -455,7 +441,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                       ),
                       _buildUserInfoRow(
                         icon: Icons.place,
-                        label: 'Birth Place:',
+                        label: localizations.birthPlaceLabel,
                         value: _userData?.birthPlace?.isNotEmpty == true
                             ? _userData!.birthPlace!
                             : 'Not set',
@@ -463,7 +449,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                       ),
                       _buildUserInfoRow(
                         icon: Icons.access_time,
-                        label: 'Birth Time:',
+                        label: localizations.birthTimeLabel,
                         value: _userData?.birthTime?.isNotEmpty == true
                             ? _userData!.birthTime!
                             : 'Not set (optional)',
@@ -495,9 +481,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      currentLocale.languageCode == 'tr'
-                          ? 'Doğru tahminler almak için kozmik profilinizi tamamlayın'
-                          : 'Complete your cosmic profile to receive accurate predictions',
+                      localizations
+                          .completeYourCosmicProfileToReceiveAccuratePredictions,
                       style: TextStyle(
                         color: Colors.orange,
                         fontSize: 12,
@@ -520,23 +505,20 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     required bool isComplete,
     bool isRequired = true,
   }) {
-    final currentLocale = Localizations.localeOf(context);
+    final localizations = AppLocalizations.of(context)!;
 
     // Translate birth date, place, and time labels
     String translatedLabel = label;
-    if (currentLocale.languageCode == 'tr') {
-      if (label == 'Birth Date:') translatedLabel = 'Doğum Tarihi:';
-      if (label == 'Birth Place:') translatedLabel = 'Doğum Yeri:';
-      if (label == 'Birth Time:') translatedLabel = 'Doğum Saati:';
-    }
+    if (label == 'Birth Date:') translatedLabel = localizations.birthDateLabel;
+    if (label == 'Birth Place:')
+      translatedLabel = localizations.birthPlaceLabel;
+    if (label == 'Birth Time:') translatedLabel = localizations.birthTimeLabel;
 
     // Translate "Not set" and "Not set (optional)" values
     String translatedValue = value;
-    if (currentLocale.languageCode == 'tr') {
-      if (value == 'Not set') translatedValue = 'Ayarlanmadı';
-      if (value == 'Not set (optional)')
-        translatedValue = 'Ayarlanmadı (isteğe bağlı)';
-    }
+    if (value == 'Not set') translatedValue = localizations.notSet;
+    if (value == 'Not set (optional)')
+      translatedValue = localizations.notSetOptional;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 4.0),
@@ -694,9 +676,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                     const Icon(Icons.chat, size: 24, color: Colors.white),
                     const SizedBox(width: 12),
                     Text(
-                      currentLocale.languageCode == 'tr'
-                          ? 'Yıldızlara Sor'
-                          : 'Ask the Stars',
+                      localizations.askTheStars,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,

@@ -29,6 +29,7 @@ class User {
   final String? birthPlace;
   final String? birthDate;
   final String? birthTime;
+  final String preferredLanguage;
 
   User({
     required this.id,
@@ -38,6 +39,7 @@ class User {
     this.birthPlace,
     this.birthDate,
     this.birthTime,
+    required this.preferredLanguage,
   });
 
   factory User.fromJson(Map<String, dynamic> json) => User(
@@ -48,6 +50,7 @@ class User {
     birthPlace: json['birthPlace'],
     birthDate: json['birthDate'],
     birthTime: json['birthTime'],
+    preferredLanguage: json['preferredLanguage'],
   );
 }
 
@@ -57,6 +60,7 @@ class UpdateUserRequest {
   final String birthPlace;
   final String birthDate;
   final String? birthTime;
+  final String preferredLanguage;
 
   UpdateUserRequest({
     required this.name,
@@ -64,6 +68,7 @@ class UpdateUserRequest {
     required this.birthPlace,
     required this.birthDate,
     this.birthTime,
+    required this.preferredLanguage,
   });
 
   Map<String, dynamic> toJson() => {
@@ -71,6 +76,7 @@ class UpdateUserRequest {
     'surname': surname,
     'birthPlace': birthPlace,
     'birthDate': birthDate,
+    'preferredLanguage': preferredLanguage,
     if (birthTime != null) 'birthTime': birthTime,
   };
 }

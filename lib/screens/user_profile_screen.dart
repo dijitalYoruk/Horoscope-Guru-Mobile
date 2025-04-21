@@ -3,6 +3,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:horoscopeguruapp/api/api.dart';
 import 'package:horoscopeguruapp/theme/colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:horoscopeguruapp/main.dart'
+    as mainApp; // Import for the changeLocale function
 
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({Key? key}) : super(key: key);
@@ -52,6 +54,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         birthTime: _birthTimeController.text.isEmpty
             ? null
             : _birthTimeController.text,
+        preferredLanguage: _selectedLanguage,
       );
 
       await api.updateUser(request, context);
@@ -72,6 +75,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   void initState() {
     super.initState();
     _getUser();
+    // Initialize the dropdown with the user's preferred language
+    _selectedLanguage = _user?.preferredLanguage ?? 'en';
   }
 
   Future<void> _getUser() async {
@@ -85,6 +90,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       _birthDateController.text = _user?.birthDate ?? '';
       _birthPlaceController.text = _user?.birthPlace ?? '';
       _birthTimeController.text = _user?.birthTime ?? '';
+      _selectedLanguage = _user?.preferredLanguage ?? 'en';
     });
   }
 
@@ -311,7 +317,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                   onChanged: (String? newValue) {
                                     setState(() {
                                       _selectedLanguage = newValue!;
-                                      // Add logic to change app language here
+                                      // Change app language
+                                      mainApp.changeLocale(
+                                          context, _selectedLanguage);
                                     });
                                   },
                                   items: <String>['en', 'tr']

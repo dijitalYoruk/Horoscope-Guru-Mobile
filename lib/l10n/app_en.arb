@@ -79,5 +79,12 @@
   "watchAd": "Watch Ad",
   "typeYourMessage": "Type your message...",
   "noRecents": "No Recents",
-  "horoscopeGuru": "Horoscope Guru"
+  "horoscopeGuru": "Horoscope Guru",
+  "todaysCosmicComedy": "TODAY'S COSMIC COMEDY",
+  "yourCosmicQuestions": "Your Cosmic Questions",
+  "birthDateLabel": "Birth Date:",
+  "birthPlaceLabel": "Birth Place:",
+  "birthTimeLabel": "Birth Time:",
+  "notSet": "Not set",
+  "notSetOptional": "Not set (optional)"
 } 
