@@ -9,6 +9,7 @@ import 'package:flutter/rendering.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:horoscopeguruapp/theme/colors.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ChatBubble extends StatelessWidget {
   final ChatMessage message;
@@ -319,7 +320,7 @@ class _ChatScreenState extends State<ChatScreen> {
         Container(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
           decoration: BoxDecoration(
-            color: AppColors.primaryDarkE,
+            color: AppColors.primaryDark,
             borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(0),
               bottomRight: Radius.circular(0),

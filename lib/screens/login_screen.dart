@@ -6,6 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:horoscopeguruapp/api/api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:horoscopeguruapp/theme/colors.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -39,34 +40,34 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _handleSignIn() async {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        print('Google Sign-In was aborted by user');
-        return;
-      }
+    final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+    if (googleUser == null) {
+      print('Google Sign-In was aborted by user');
+      return;
+    }
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final idToken = googleAuth.idToken;
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
+    final idToken = googleAuth.idToken;
 
-      if (idToken == null) {
-        print('ID token is null');
-        return;
-      }
+    if (idToken == null) {
+      print('ID token is null');
+      return;
+    }
 
-      // make a sign in request using open api by sending id token
-      final api = Api();
+    // make a sign in request using open api by sending id token
+    final api = Api();
 
-      var resp = await api.signInWithGoogle(idToken, context);
+    var resp = await api.signInWithGoogle(idToken, context);
 
-      // Save the token to SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('access_token', resp.token);
+    // Save the token to SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('access_token', resp.token);
 
-      // Navigate to home screen
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
-      }
+    // Navigate to home screen
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/home');
+    }
   }
 
   // Example function to send the access token to your backend
@@ -78,6 +79,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final primaryColor = AppColors.primary;
     final backgroundColor = AppColors.primaryDark;
+    final localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -85,10 +87,10 @@ class _LoginPageState extends State<LoginPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.all(8),
               child: Text(
-                "Horoscope Guru",
+                localizations.appTitle,
                 style: TextStyle(
                   color: Colors.orange,
                   fontSize: 36,
@@ -96,10 +98,10 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
             ),
-            const Padding(
+            Padding(
               padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               child: Text(
-                "Your Personal Horoscope AI Assistant. Ask me anything to reveal the secrets of the stars.",
+                localizations.appDescription,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -122,8 +124,8 @@ class _LoginPageState extends State<LoginPage> {
                 color: Colors.orange,
                 size: 36,
               ),
-              label: const Text(
-                'Sign in with Google',
+              label: Text(
+                localizations.signInWithGoogle,
                 style: TextStyle(color: Colors.white, fontSize: 18.9),
               ),
               style: ElevatedButton.styleFrom(

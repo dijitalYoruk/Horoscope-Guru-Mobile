@@ -6,9 +6,17 @@ import 'package:intl/intl.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:horoscopeguruapp/widgets/language_selector.dart';
+import 'package:horoscopeguruapp/main.dart'
+    as mainApp; // Import for the changeLocale function
 
 import 'package:horoscopeguruapp/api/api.dart';
 import 'package:horoscopeguruapp/theme/colors.dart';
+
+// Global route observer
+final RouteObserver<PageRoute<dynamic>> routeObserver =
+    RouteObserver<PageRoute<dynamic>>();
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,23 +28,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with RouteAware {
   // Daily Laughter Card Component
   late String _funnyAstroQuote;
-  final List<String> _astroQuotes = [
-    "When Mercury is in retrograde, even your microwave questions life choices.",
-    "Your horoscope says you'll meet someone tall, dark, and handsome... it's just your shadow at 5 PM.",
-    "The stars say today is perfect for new beginnings... like that gym membership you won't use.",
-    "Venus is in your house of snacks - expect mysterious disappearances of chips.",
-    "Today's cosmic alignment suggests you'll argue with a Libra about where to eat... again.",
-    "Your aura is purple today, which means either spiritual growth or you sat on a grape.",
-    "Mars is in your WiFi zone - expect buffering during important video calls.",
-    "The moon suggests you'll find what you're looking for... in the last place you left it.",
-    "Jupiter's position indicates someone is thinking about you... probably wondering why you haven't texted back.",
-    "Your spiritual animal today is a sloth. Interpret this as you will (but maybe take a nap).",
-    "The universe says you're destined for greatness... right after this Netflix binge.",
-    "Today's reading: You will walk into a room and forget why. Bonus points if you do it twice.",
-    "Saturn's rings predict you'll say 'I'll do it tomorrow' exactly 4 times today.",
-    "Cosmic forecast: Your phone will die at 15% battery. The universe finds this hilarious.",
-    "The stars say you'll have a brilliant idea today... right after you forget it."
-  ];
+  late List<String> _astroQuotes;
 
   // Expanded Chat History Data (20 items)
   List<Chat> _chatHistory = [];
@@ -47,7 +39,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   @override
   void initState() {
     super.initState();
-    _funnyAstroQuote = _astroQuotes[Random().nextInt(_astroQuotes.length)];
     getUserChats();
     _getUserData();
   }
@@ -56,6 +47,25 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   void didChangeDependencies() {
     super.didChangeDependencies();
     routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute<dynamic>);
+    // Initialize _astroQuotes here
+    _astroQuotes = [
+      AppLocalizations.of(context)!.funnyAstroQuote1,
+      AppLocalizations.of(context)!.funnyAstroQuote2,
+      AppLocalizations.of(context)!.funnyAstroQuote3,
+      AppLocalizations.of(context)!.funnyAstroQuote4,
+      AppLocalizations.of(context)!.funnyAstroQuote5,
+      AppLocalizations.of(context)!.funnyAstroQuote6,
+      AppLocalizations.of(context)!.funnyAstroQuote7,
+      AppLocalizations.of(context)!.funnyAstroQuote8,
+      AppLocalizations.of(context)!.funnyAstroQuote9,
+      AppLocalizations.of(context)!.funnyAstroQuote10,
+      AppLocalizations.of(context)!.funnyAstroQuote11,
+      AppLocalizations.of(context)!.funnyAstroQuote12,
+      AppLocalizations.of(context)!.funnyAstroQuote13,
+      AppLocalizations.of(context)!.funnyAstroQuote14,
+      AppLocalizations.of(context)!.funnyAstroQuote15
+    ];
+    _funnyAstroQuote = _astroQuotes[Random().nextInt(_astroQuotes.length)];
   }
 
   @override
@@ -104,6 +114,14 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   Widget _buildDailyLaughterCard() {
     final primaryColor = AppColors.primary;
     final textColor = AppColors.textColor;
+    final localizations = AppLocalizations.of(context)!;
+
+    // Turkish translations of the quotes would be here
+    final Locale currentLocale = Localizations.localeOf(context);
+    final currentQuotes = _astroQuotes;
+
+    // Get a quote based on current language
+    final quote = currentQuotes[Random().nextInt(currentQuotes.length)];
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20),
@@ -119,8 +137,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             children: [
               const Icon(Icons.sentiment_satisfied, color: AppColors.accent),
               const SizedBox(width: 8),
-              const Text(
-                'TODAY\'S COSMIC COMEDY',
+              Text(
+                currentLocale.languageCode == 'tr'
+                    ? 'GÜNÜN KOZMİK KOMEDİSİ'
+                    : 'TODAY\'S COSMIC COMEDY',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 14,
@@ -132,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           ),
           const SizedBox(height: 8),
           Text(
-            _funnyAstroQuote,
+            quote,
             style: TextStyle(
               color: textColor,
               fontSize: 15,
@@ -142,8 +162,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Refresh for cosmic wisdom',
+              Text(
+                currentLocale.languageCode == 'tr'
+                    ? 'Kozmik bilgelik için yenileyin'
+                    : 'Refresh for cosmic wisdom',
                 style: TextStyle(
                   color: AppColors.accent,
                   fontSize: 12,
@@ -156,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                 onPressed: () {
                   setState(() {
                     _funnyAstroQuote =
-                        _astroQuotes[Random().nextInt(_astroQuotes.length)];
+                        currentQuotes[Random().nextInt(currentQuotes.length)];
                   });
                 },
               ),
@@ -169,6 +191,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   Widget _buildChatHistorySection() {
     final secondaryTextColor = Colors.grey[400];
+    final localizations = AppLocalizations.of(context)!;
+    final currentLocale = Localizations.localeOf(context);
 
     return Expanded(
       child: Container(
@@ -192,8 +216,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                       const Icon(Icons.question_answer,
                           color: AppColors.accent),
                       const SizedBox(width: 8),
-                      const Text(
-                        'Your Cosmic Questions',
+                      Text(
+                        currentLocale.languageCode == 'tr'
+                            ? 'Kozmik Sorularınız'
+                            : 'Your Cosmic Questions',
                         style: TextStyle(
                           color: AppColors.textColor,
                           fontSize: 18,
@@ -202,12 +228,24 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                       ),
                     ],
                   ),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text(
-                      'View All',
-                      style: TextStyle(color: AppColors.accent),
-                    ),
+                  Row(
+                    children: [
+                      TextButton(
+                        onPressed: () {},
+                        child: Text(
+                          currentLocale.languageCode == 'tr'
+                              ? 'Hepsini Gör'
+                              : 'View All',
+                          style: TextStyle(color: AppColors.accent),
+                        ),
+                      ),
+                      // Language selector
+                      LanguageSelector(
+                        onLanguageChanged: (String languageCode) {
+                          mainApp.changeLocale(context, languageCode);
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -216,7 +254,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               child: _chatHistory.isEmpty
                   ? Center(
                       child: Text(
-                        'No cosmic questions received yet.',
+                        currentLocale.languageCode == 'tr'
+                            ? 'Henüz kozmik soru alınmadı.'
+                            : 'No cosmic questions received yet.',
                         style: TextStyle(
                           color: secondaryTextColor,
                           fontSize: 16,
@@ -239,7 +279,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
                             setState(() {
                               _chatHistory.removeAt(index);
-
                             });
                           },
                           background: Container(
@@ -335,6 +374,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Widget _buildUserInfoBanner() {
+    final localizations = AppLocalizations.of(context)!;
+    final currentLocale = Localizations.localeOf(context);
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.primary,
@@ -358,7 +400,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                 Icon(Icons.person, color: Colors.orange, size: 16),
                 const SizedBox(width: 6),
                 Text(
-                  'PROFILE',
+                  currentLocale.languageCode == 'tr' ? 'PROFİL' : 'PROFILE',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 12,
@@ -372,7 +414,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                     Navigator.pushNamed(context, '/userProfile');
                   },
                   child: Text(
-                    'Edit',
+                    currentLocale.languageCode == 'tr' ? 'Düzenle' : 'Edit',
                     style: TextStyle(
                       color: Colors.orange,
                       fontSize: 12,
@@ -453,7 +495,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Complete your cosmic profile to receive accurate predictions',
+                      currentLocale.languageCode == 'tr'
+                          ? 'Doğru tahminler almak için kozmik profilinizi tamamlayın'
+                          : 'Complete your cosmic profile to receive accurate predictions',
                       style: TextStyle(
                         color: Colors.orange,
                         fontSize: 12,
@@ -476,6 +520,24 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     required bool isComplete,
     bool isRequired = true,
   }) {
+    final currentLocale = Localizations.localeOf(context);
+
+    // Translate birth date, place, and time labels
+    String translatedLabel = label;
+    if (currentLocale.languageCode == 'tr') {
+      if (label == 'Birth Date:') translatedLabel = 'Doğum Tarihi:';
+      if (label == 'Birth Place:') translatedLabel = 'Doğum Yeri:';
+      if (label == 'Birth Time:') translatedLabel = 'Doğum Saati:';
+    }
+
+    // Translate "Not set" and "Not set (optional)" values
+    String translatedValue = value;
+    if (currentLocale.languageCode == 'tr') {
+      if (value == 'Not set') translatedValue = 'Ayarlanmadı';
+      if (value == 'Not set (optional)')
+        translatedValue = 'Ayarlanmadı (isteğe bağlı)';
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 4.0),
       child: Row(
@@ -490,7 +552,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           ),
           const SizedBox(width: 8),
           Text(
-            label,
+            translatedLabel,
             style: TextStyle(
               color: Colors.white,
               fontSize: 12,
@@ -500,7 +562,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           const SizedBox(width: 4),
           Expanded(
             child: Text(
-              value,
+              translatedValue,
               style: TextStyle(
                 color: isComplete
                     ? Colors.white
@@ -519,6 +581,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     final backgroundColor = AppColors.primaryDark;
     final iconBgColor = AppColors.primary;
     final textColor = AppColors.textColor;
+    final localizations = AppLocalizations.of(context)!;
+    final currentLocale = Localizations.localeOf(context);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -558,7 +622,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Horoscope Guru',
+                                localizations.appTitle,
                                 style: TextStyle(
                                   fontSize: 26,
                                   fontWeight: FontWeight.w800,
@@ -630,7 +694,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                     const Icon(Icons.chat, size: 24, color: Colors.white),
                     const SizedBox(width: 12),
                     Text(
-                      'Ask the Stars',
+                      currentLocale.languageCode == 'tr'
+                          ? 'Yıldızlara Sor'
+                          : 'Ask the Stars',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -651,6 +717,3 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     );
   }
 }
-
-// Define a RouteObserver to be used in the app
-final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();

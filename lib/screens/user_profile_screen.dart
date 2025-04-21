@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:horoscopeguruapp/api/api.dart';
 import 'package:horoscopeguruapp/theme/colors.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({Key? key}) : super(key: key);
@@ -192,22 +193,26 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: AppColors.primaryDark,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'Your Cosmic Profile',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+        title: Text(
+          localizations.profileTitle,
+          style: TextStyle(color: AppColors.textColor),
+        ),
+        actions: [
+          // Settings button
+          IconButton(
+            icon: Icon(Icons.settings, color: AppColors.textColor),
+            onPressed: () {
+              Navigator.pushNamed(context, '/settings');
+            },
           ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+        ],
       ),
       body: Stack(
         children: [
