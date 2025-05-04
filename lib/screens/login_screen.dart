@@ -1,12 +1,13 @@
-import 'package:dio/dio.dart';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:horoscopeguruapp/api/api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:horoscopeguruapp/theme/colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:horoscopeguruapp/main.dart' as mainApp; // Import for the changeLocale function
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -24,10 +25,19 @@ class _LoginPageState extends State<LoginPage> {
     ],
   );
 
+  String _selectedLanguage = 'en'; // Default language
+
   @override
   void initState() {
     super.initState();
     _checkExistingToken();
+
+    setState(() {
+      _selectedLanguage = window.locale.languageCode == 'tr' ? 'tr' : 'en';
+    });
+
+    mainApp.changeLocale(
+        context, _selectedLanguage);
   }
 
   Future<void> _checkExistingToken() async {
@@ -58,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
     // make a sign in request using open api by sending id token
     final api = Api();
 
-    var resp = await api.signInWithGoogle(idToken, context);
+    var resp = await api.signInWithGoogle(idToken, _selectedLanguage, context);
 
     // Save the token to SharedPreferences
     final prefs = await SharedPreferences.getInstance();

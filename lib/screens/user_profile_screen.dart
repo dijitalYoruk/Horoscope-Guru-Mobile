@@ -119,7 +119,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     if (picked != null) {
       setState(() {
         _birthDateController.text =
-            "${picked.month}/${picked.day}/${picked.year}";
+            "${picked.day}/${picked.month}/${picked.year}";
       });
     }
   }

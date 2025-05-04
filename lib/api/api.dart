@@ -250,11 +250,11 @@ class Api {
   );
 
   Future<GoogleSignInResponse> signInWithGoogle(
-      String idToken, BuildContext context) async {
+      String idToken, String? lang, BuildContext context) async {
     try {
       final response = await _dio.get(
         '/auth/google/sign-in',
-        queryParameters: {'idToken': idToken},
+        queryParameters: {'idToken': idToken, 'lang': lang == 'tr' ? 'tr' : 'en' },
       );
       return GoogleSignInResponse.fromJson(response.data);
     } catch (exp) {
@@ -407,7 +407,7 @@ class Api {
       );
     } else {
       Fluttertoast.showToast(
-        msg: 'Bir hata oluştu: ${e.toString()}',
+        msg: 'Error: ${e.toString()}',
         backgroundColor: AppColors.accent,
         textColor: Colors.white,
       );

@@ -120,6 +120,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetChatResponse'
+    delete:
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: chatId
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: "ChatMessage"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteChatResponse'
 
 
   /chat/{chatId}/generate/title:
@@ -167,6 +183,11 @@ components:
       properties:
         idToken:
           type: string
+        lang:
+          type: string
+          enum:
+            - en
+            - tr
 
     UpdateUserRequest:
       type: object
@@ -175,6 +196,7 @@ components:
         - surname
         - birthPlace
         - birthDate
+        - preferredLanguage
       properties:
         name:
           type: string
@@ -186,6 +208,8 @@ components:
           type: string
         birthTime:
           type: string
+        preferredLanguage:
+          type: string
 
     User:
       type: object
@@ -194,6 +218,7 @@ components:
         - email
         - name
         - surname
+        - preferredLanguage
       properties:
         id:
           type: string
@@ -211,6 +236,8 @@ components:
         birthTime:
           type: string
           format: time
+        preferredLanguage:
+          type: string
 
     PostChatRequest:
       type: object
@@ -267,6 +294,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ChatMessage'
+
+    DeleteChatResponse:
+      type: object
+      required:
+        - chatId
+      properties:
+        chatId:
+          type: string
 
     GetAllUserChatsResponse:
       type: object
