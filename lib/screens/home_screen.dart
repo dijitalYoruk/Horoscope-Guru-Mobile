@@ -39,13 +39,15 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     super.initState();
     getUserChats();
     _getUserData();
+
+
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute<dynamic>);
-    // Initialize _astroQuotes here
+
     _astroQuotes = [
       AppLocalizations.of(context)!.funnyAstroQuote1,
       AppLocalizations.of(context)!.funnyAstroQuote2,
@@ -63,6 +65,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       AppLocalizations.of(context)!.funnyAstroQuote14,
       AppLocalizations.of(context)!.funnyAstroQuote15
     ];
+
     _funnyAstroQuote = _astroQuotes[Random().nextInt(_astroQuotes.length)];
   }
 
@@ -116,13 +119,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     final textColor = AppColors.textColor;
     final localizations = AppLocalizations.of(context)!;
 
-    // Turkish translations of the quotes would be here
-    final Locale currentLocale = Localizations.localeOf(context);
-    final currentQuotes = _astroQuotes;
-
-    // Get a quote based on current language
-    final quote = currentQuotes[Random().nextInt(currentQuotes.length)];
-
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20),
       padding: EdgeInsets.only(top: 20, bottom: 10, right: 16, left: 16),
@@ -150,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           ),
           const SizedBox(height: 8),
           Text(
-            quote,
+            _funnyAstroQuote,
             style: TextStyle(
               color: textColor,
               fontSize: 15,
@@ -174,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                 onPressed: () {
                   setState(() {
                     _funnyAstroQuote =
-                        currentQuotes[Random().nextInt(currentQuotes.length)];
+                    _astroQuotes[Random().nextInt(_astroQuotes.length)];
                   });
                 },
               ),
