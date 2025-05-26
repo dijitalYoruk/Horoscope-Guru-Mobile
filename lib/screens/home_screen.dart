@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:horoscopeguruapp/screens/chat_screen.dart';
+import 'package:horoscopeguruapp/utils/funny_quotes.dart';
 import 'dart:math';
 import 'package:intl/intl.dart';
 import 'package:flutter/widgets.dart';
@@ -39,33 +40,13 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     super.initState();
     getUserChats();
     _getUserData();
-
-
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute<dynamic>);
-
-    _astroQuotes = [
-      AppLocalizations.of(context)!.funnyAstroQuote1,
-      AppLocalizations.of(context)!.funnyAstroQuote2,
-      AppLocalizations.of(context)!.funnyAstroQuote3,
-      AppLocalizations.of(context)!.funnyAstroQuote4,
-      AppLocalizations.of(context)!.funnyAstroQuote5,
-      AppLocalizations.of(context)!.funnyAstroQuote6,
-      AppLocalizations.of(context)!.funnyAstroQuote7,
-      AppLocalizations.of(context)!.funnyAstroQuote8,
-      AppLocalizations.of(context)!.funnyAstroQuote9,
-      AppLocalizations.of(context)!.funnyAstroQuote10,
-      AppLocalizations.of(context)!.funnyAstroQuote11,
-      AppLocalizations.of(context)!.funnyAstroQuote12,
-      AppLocalizations.of(context)!.funnyAstroQuote13,
-      AppLocalizations.of(context)!.funnyAstroQuote14,
-      AppLocalizations.of(context)!.funnyAstroQuote15
-    ];
-
+    _astroQuotes = FunnyAstroQuotes.getQuotes(context);
     _funnyAstroQuote = _astroQuotes[Random().nextInt(_astroQuotes.length)];
   }
 
@@ -115,15 +96,13 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   }
 
   Widget _buildDailyLaughterCard() {
-    final primaryColor = AppColors.primary;
-    final textColor = AppColors.textColor;
     final localizations = AppLocalizations.of(context)!;
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20),
       padding: EdgeInsets.only(top: 20, bottom: 10, right: 16, left: 16),
       decoration: BoxDecoration(
-        color: primaryColor,
+        color: AppColors.primary,
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
@@ -135,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               const SizedBox(width: 8),
               Text(
                 localizations.todaysCosmicComedy,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -147,8 +126,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           const SizedBox(height: 8),
           Text(
             _funnyAstroQuote,
-            style: TextStyle(
-              color: textColor,
+            style: const TextStyle(
+              color: AppColors.textColor,
               fontSize: 15,
               height: 1.5,
             ),
@@ -158,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             children: [
               Text(
                 localizations.refreshForCosmicWisdom,
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppColors.accent,
                   fontSize: 12,
                   fontStyle: FontStyle.italic,
@@ -210,7 +189,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                       const SizedBox(width: 8),
                       Text(
                         localizations.yourCosmicQuestions,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppColors.textColor,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -224,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                         onPressed: () {},
                         child: Text(
                           localizations.viewAll,
-                          style: TextStyle(color: AppColors.accent),
+                          style: const TextStyle(color: AppColors.accent),
                         ),
                       ),
                     ],
@@ -281,7 +260,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                               ),
                               title: Text(
                                 chat.chatTitle!,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 15,
                                   fontWeight: FontWeight.w500,
@@ -294,16 +273,16 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Icon(
+                                      const Icon(
                                         Icons.calendar_today,
                                         size: 12,
                                         color: AppColors.accent,
                                       ),
-                                      SizedBox(width: 4),
+                                      const SizedBox(width: 4),
                                       Text(
                                         DateFormat('MMM d')
                                             .format(chat.updatedAt),
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           color: AppColors.accent,
                                           fontSize: 12,
                                         ),
@@ -314,16 +293,16 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Icon(
+                                      const Icon(
                                         Icons.access_time,
                                         size: 12,
                                         color: AppColors.accent,
                                       ),
-                                      SizedBox(width: 4),
+                                      const SizedBox(width: 4),
                                       Text(
                                         DateFormat('HH:mm')
                                             .format(chat.updatedAt),
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           color: AppColors.accent,
                                           fontSize: 12,
                                         ),
@@ -370,18 +349,18 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: AppColors.primary.withOpacity(0.6),
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(11),
                 topRight: Radius.circular(11),
               ),
             ),
             child: Row(
               children: [
-                Icon(Icons.person, color: Colors.orange, size: 16),
+                const Icon(Icons.person, color: Colors.orange, size: 16),
                 const SizedBox(width: 6),
                 Text(
                   localizations.profile,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -395,7 +374,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                   },
                   child: Text(
                     localizations.edit,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.orange,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
@@ -413,9 +392,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: _userData == null
-                ? Center(
+                ? const Center(
                     child: Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: EdgeInsets.all(8.0),
                       child: CircularProgressIndicator(
                         valueColor:
                             AlwaysStoppedAnimation<Color>(Colors.orange),
@@ -463,21 +442,21 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: Colors.orange.withOpacity(0.2),
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(11),
                   bottomRight: Radius.circular(11),
                 ),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.warning_amber_rounded,
+                  const Icon(Icons.warning_amber_rounded,
                       color: Colors.orange, size: 16),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       localizations
                           .completeYourCosmicProfileToReceiveAccuratePredictions,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.orange,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -504,15 +483,17 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     // Translate birth date, place, and time labels
     String translatedLabel = label;
     if (label == 'Birth Date:') translatedLabel = localizations.birthDateLabel;
-    if (label == 'Birth Place:')
+    if (label == 'Birth Place:') {
       translatedLabel = localizations.birthPlaceLabel;
+    }
     if (label == 'Birth Time:') translatedLabel = localizations.birthTimeLabel;
 
     // Translate "Not set" and "Not set (optional)" values
     String translatedValue = value;
     if (value == 'Not set') translatedValue = localizations.notSet;
-    if (value == 'Not set (optional)')
+    if (value == 'Not set (optional)') {
       translatedValue = localizations.notSetOptional;
+    }
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 4.0),
@@ -529,7 +510,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           const SizedBox(width: 8),
           Text(
             translatedLabel,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 12,
               fontWeight: FontWeight.w500,
@@ -556,9 +537,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   Widget build(BuildContext context) {
     final backgroundColor = AppColors.primaryDark;
     final iconBgColor = AppColors.primary;
-    final textColor = AppColors.textColor;
     final localizations = AppLocalizations.of(context)!;
-    final currentLocale = Localizations.localeOf(context);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -599,7 +578,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                             children: [
                               Text(
                                 localizations.appTitle,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 26,
                                   fontWeight: FontWeight.w800,
                                   color: AppColors.accent,
@@ -609,11 +588,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                               GestureDetector(
                                 onTap: _handleSignOut,
                                 child: Container(
-                                  padding: EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
                                       borderRadius: BorderRadius.all(
                                           Radius.circular(20))),
-                                  child: FaIcon(
+                                  child: const FaIcon(
                                     FontAwesomeIcons.signOutAlt,
                                     color: AppColors.accent,
                                     size: 24,
@@ -621,9 +600,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                                 ),
                               ),
                             ]),
-                        SizedBox(
-                          height: 4,
-                        ),
+                        const SizedBox(height: 4),
                         _buildUserInfoBanner(),
                       ],
                     ),
@@ -637,7 +614,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
             // Start Chat Button
             Container(
-              margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
@@ -651,7 +628,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ChatScreen(),
+                        builder: (context) => const ChatScreen(),
                       ),
                     );
                   }
@@ -671,7 +648,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                     const SizedBox(width: 12),
                     Text(
                       localizations.askTheStars,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: AppColors.primary,

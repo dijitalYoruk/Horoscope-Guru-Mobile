@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:horoscopeguruapp/screens/chat_screen.dart';
 import 'package:horoscopeguruapp/screens/home_screen.dart';
 import 'package:horoscopeguruapp/screens/login_screen.dart';

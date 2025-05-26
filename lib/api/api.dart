@@ -246,7 +246,7 @@ class Api {
 
   Api._internal()
       : _dio = Dio(
-    BaseOptions(baseUrl: 'http://10.0.2.2:8080'),
+    BaseOptions(baseUrl: 'http://161.35.160.140:3000'),
   );
 
   Future<GoogleSignInResponse> signInWithGoogle(

@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:horoscopeguruapp/api/api.dart';
+import 'package:horoscopeguruapp/utils/environment_keys.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:horoscopeguruapp/theme/colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:horoscopeguruapp/main.dart' as mainApp; // Import for the changeLocale function
+import 'package:horoscopeguruapp/main.dart' as mainApp;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,11 +19,8 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final GoogleSignIn _googleSignIn = GoogleSignIn(
-    clientId:
-        "759644461132-brob7a6si7mjdvhqvud7irvo5miovkc1.apps.googleusercontent.com",
-    scopes: [
-      'email',
-    ],
+    clientId: EnvironmentKeys.GoogleClientId,
+    scopes: [ 'email' ],
   );
 
   String _selectedLanguage = 'en'; // Default language
@@ -51,8 +49,8 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _handleSignIn() async {
     final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
     if (googleUser == null) {
-      print('Google Sign-In was aborted by user');
       return;
     }
 
@@ -61,7 +59,6 @@ class _LoginPageState extends State<LoginPage> {
     final idToken = googleAuth.idToken;
 
     if (idToken == null) {
-      print('ID token is null');
       return;
     }
 
@@ -87,12 +84,10 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = AppColors.primary;
-    final backgroundColor = AppColors.primaryDark;
     final localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: AppColors.primaryDark,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -101,7 +96,7 @@ class _LoginPageState extends State<LoginPage> {
               padding: EdgeInsets.all(8),
               child: Text(
                 localizations.appTitle,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.orange,
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
@@ -109,10 +104,10 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             Padding(
-              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               child: Text(
                 localizations.appDescription,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
                 ),
@@ -120,7 +115,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             Padding(
-              padding: EdgeInsets.symmetric(vertical: 0, horizontal: 24),
+              padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 24),
               child: Image.asset(
                 'assets/images/logo.png',
                 width: double.infinity, // optional
@@ -129,17 +124,17 @@ class _LoginPageState extends State<LoginPage> {
             ),
             const SizedBox(height: 30),
             ElevatedButton.icon(
-              icon: FaIcon(
+              icon: const FaIcon(
                 FontAwesomeIcons.google,
                 color: Colors.orange,
                 size: 36,
               ),
               label: Text(
                 localizations.signInWithGoogle,
-                style: TextStyle(color: Colors.white, fontSize: 18.9),
+                style: const TextStyle(color: Colors.white, fontSize: 18.9),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
+                backgroundColor: AppColors.primary,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                 shape: RoundedRectangleBorder(

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:horoscopeguruapp/api/api.dart';
+import 'package:horoscopeguruapp/screens/chat_emoji_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/rendering.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:horoscopeguruapp/theme/colors.dart';
@@ -74,7 +74,12 @@ class ChatBubble extends StatelessWidget {
                   child: MarkdownBody(
                     data: message.content,
                     styleSheet: MarkdownStyleSheet(
-                      p: TextStyle(color: textColor, fontSize: 15, height: 1.4),
+                      p: TextStyle(
+                          color: message.role == ChatMessageRole.user
+                              ? AppColors.primaryDark
+                              : AppColors.textColor,
+                          fontSize: 15,
+                          height: 1.4),
                     ),
                   ),
                 ),
@@ -104,6 +109,7 @@ class ChatScreen extends StatefulWidget {
 
   static const bool enableAds = true;
   static const int maxMessages = 4;
+  static const int maxUserMessages = 25;
   static const String messageCountKey = 'message_count';
 
   @override
@@ -220,6 +226,61 @@ class _ChatScreenState extends State<ChatScreen> {
   void _handleSubmitted(String text) async {
     if (text.trim().isEmpty || _isProcessingMessage) return;
 
+    // Check if user message limit is reached
+    int userMessageCount =
+        _messages.where((msg) => msg.role == ChatMessageRole.user).length;
+    if (userMessageCount >= ChatScreen.maxUserMessages) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Container(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, color: AppColors.accent),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Chat limit reached',
+                        style: TextStyle(
+                          color: AppColors.accent,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Please start a new chat to continue',
+                        style: TextStyle(
+                          color: AppColors.textColor,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          backgroundColor: AppColors.primaryDarkE,
+          duration: const Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: EdgeInsets.only(
+            bottom: MediaQuery.of(context).size.height - 100,
+            right: 20,
+            left: 20,
+          ),
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _isProcessingMessage = true;
     });
@@ -315,6 +376,11 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildInputArea(Color textColor, Color buttonColor) {
+    // Check if user message limit is reached
+    int userMessageCount =
+        _messages.where((msg) => msg.role == ChatMessageRole.user).length;
+    bool isLimitReached = userMessageCount >= ChatScreen.maxUserMessages;
+
     return Column(
       children: [
         Container(
@@ -331,19 +397,25 @@ class _ChatScreenState extends State<ChatScreen> {
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.primaryDark,
+                    color: isLimitReached
+                        ? AppColors.primaryDark.withOpacity(0.5)
+                        : AppColors.primaryDark,
                   ),
                   child: Row(
                     children: [
                       const SizedBox(width: 16),
                       Expanded(
                         child: TextField(
+                          maxLines: null,
+                          // Allows unlimited lines
                           controller: _messageController,
                           focusNode: _messageFocusNode,
                           style: TextStyle(color: textColor),
+                          enabled: !isLimitReached,
                           decoration: InputDecoration.collapsed(
-                            hintText:
-                                AppLocalizations.of(context)!.typeYourMessage,
+                            hintText: isLimitReached
+                                ? 'Chat limit reached.'
+                                : AppLocalizations.of(context)!.typeYourMessage,
                             hintStyle: TextStyle(
                               color: Colors.grey.shade400,
                               fontSize: 15,
@@ -361,12 +433,17 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                       IconButton(
                         icon: Icon(Icons.emoji_emotions_outlined,
-                            color: AppColors.accent),
-                        onPressed: () {
-                          setState(() {
-                            _isEmojiPickerVisible = !_isEmojiPickerVisible;
-                          });
-                        },
+                            color: isLimitReached
+                                ? AppColors.accent.withOpacity(0.5)
+                                : AppColors.accent),
+                        onPressed: isLimitReached
+                            ? null
+                            : () {
+                                setState(() {
+                                  _isEmojiPickerVisible =
+                                      !_isEmojiPickerVisible;
+                                });
+                              },
                       ),
                     ],
                   ),
@@ -374,90 +451,35 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               const SizedBox(width: 8),
               Container(
-                decoration: const BoxDecoration(
-                  color: AppColors.accent,
+                decoration: BoxDecoration(
+                  color: isLimitReached
+                      ? AppColors.accent.withOpacity(0.5)
+                      : AppColors.accent,
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
                   icon: Icon(Icons.send, color: textColor),
-                  onPressed: () => _handleSubmitted(_messageController.text),
+                  onPressed: isLimitReached
+                      ? null
+                      : () => _handleSubmitted(_messageController.text),
                 ),
               ),
             ],
           ),
         ),
-        if (_isEmojiPickerVisible)
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.deepPurple.shade800,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(0),
-                bottomRight: Radius.circular(0),
-              ),
-            ),
-            child: SizedBox(
-              height: 250,
-              child: EmojiPicker(
-                onBackspacePressed: () {
-                  setState(() {
-                    _isEmojiPickerVisible = false;
-                  });
-                },
-                onEmojiSelected: (category, emoji) {
-                  final currentText = _messageController.text;
-                  final newText = currentText + emoji.emoji;
-                  _messageController.value = TextEditingValue(
-                    text: newText,
-                    selection: TextSelection.collapsed(offset: newText.length),
-                  );
-                },
-                config: Config(
-                  height: 250,
-                  viewOrderConfig: ViewOrderConfig(),
-                  checkPlatformCompatibility: true,
-                  emojiSet: null,
-                  emojiTextStyle: TextStyle(fontSize: 32, color: Colors.white),
-                  customSearchIcon:
-                      const Icon(Icons.search, color: Colors.white),
-                  customBackspaceIcon:
-                      const Icon(Icons.close, color: Colors.white),
-                  emojiViewConfig: EmojiViewConfig(
-                    columns: 7,
-                    emojiSizeMax: 32.0,
-                    backgroundColor: AppColors.primaryDark,
-                    verticalSpacing: 0,
-                    horizontalSpacing: 0,
-                    gridPadding: EdgeInsets.zero,
-                    recentsLimit: 28,
-                    replaceEmojiOnLimitExceed: false,
-                    noRecents: Text(
-                      AppLocalizations.of(context)!.noRecents,
-                      style:
-                          TextStyle(fontSize: 20, color: Colors.grey.shade400),
-                      textAlign: TextAlign.center,
-                    ),
-                    loadingIndicator: SizedBox.shrink(),
-                    buttonMode: ButtonMode.MATERIAL,
-                  ),
-                  categoryViewConfig: const CategoryViewConfig(
-                    backgroundColor: AppColors.primaryDarkE,
-                    iconColor: AppColors.textColor,
-                    iconColorSelected: AppColors.accent,
-                    indicatorColor: AppColors.accent,
-                  ),
-                  bottomActionBarConfig: BottomActionBarConfig(
-                    backgroundColor: AppColors.primaryDarkE,
-                    buttonColor: AppColors.primaryDarkE,
-                    buttonIconColor: Colors.white,
-                  ),
-                  searchViewConfig: SearchViewConfig(
-                    backgroundColor: AppColors.primaryDarkE,
-                    hintTextStyle: TextStyle(color: AppColors.textColor),
-                  ),
-                ),
-              ),
-            ),
-          ),
+        if (_isEmojiPickerVisible && !isLimitReached)
+          ChatEmojiPicker(onBackspacePressed: () {
+            setState(() {
+              _isEmojiPickerVisible = false;
+            });
+          }, onEmojiSelected: (category, emoji) {
+            final currentText = _messageController.text;
+            final newText = currentText + emoji.emoji;
+            _messageController.value = TextEditingValue(
+              text: newText,
+              selection: TextSelection.collapsed(offset: newText.length),
+            );
+          })
       ],
     );
   }
