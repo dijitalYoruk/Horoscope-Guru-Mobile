@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:horoscopeguruapp/screens/login_screen.dart';
 import 'package:horoscopeguruapp/theme/colors.dart';
+import 'package:horoscopeguruapp/utils/environment_keys.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // ---------------------- MODELS ----------------------
@@ -246,7 +247,7 @@ class Api {
 
   Api._internal()
       : _dio = Dio(
-    BaseOptions(baseUrl: 'http://161.35.160.140:3000'),
+    BaseOptions(baseUrl: EnvironmentKeys.ApiUrl),
   );
 
   Future<GoogleSignInResponse> signInWithGoogle(

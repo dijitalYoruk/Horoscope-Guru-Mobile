@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:horoscopeguruapp/api/api.dart';
 import 'package:horoscopeguruapp/screens/chat_emoji_picker.dart';
+import 'package:horoscopeguruapp/utils/environment_keys.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/rendering.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -129,10 +130,7 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _isProcessingMessage = false;
   bool _isInputAreaVisible = false;
 
-  final String _androidAdUnitId = 'ca-app-pub-3940256099942544/5224354917';
-  final String _iosAdUnitId = 'ca-app-pub-3940256099942544/5224354917';
-
-  String get _adUnitId => Platform.isIOS ? _iosAdUnitId : _androidAdUnitId;
+  String get _adUnitId => Platform.isIOS ? EnvironmentKeys.IosAdMobIdAndroid : EnvironmentKeys.GoogleAdMobIdAndroid;
 
   String? _chatId;
 
@@ -234,10 +232,10 @@ class _ChatScreenState extends State<ChatScreen> {
         SnackBar(
           content: Container(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Row(
+            child: const Row(
               children: [
                 Icon(Icons.info_outline, color: AppColors.accent),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -251,7 +249,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           fontSize: 16,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(
                         'Please start a new chat to continue',
                         style: TextStyle(
@@ -329,7 +327,7 @@ class _ChatScreenState extends State<ChatScreen> {
             Text(AppLocalizations.of(context)!.watchAnAd),
           ],
         ),
-        titleTextStyle: TextStyle(
+        titleTextStyle: const TextStyle(
           color: Colors.white,
           fontSize: 20,
           fontWeight: FontWeight.bold,
@@ -337,7 +335,7 @@ class _ChatScreenState extends State<ChatScreen> {
         content: Text(
           AppLocalizations.of(context)!.watchAdToUnlockMessages,
         ),
-        contentTextStyle: TextStyle(
+        contentTextStyle: const TextStyle(
           color: Colors.grey,
           fontSize: 15,
         ),
@@ -385,7 +383,7 @@ class _ChatScreenState extends State<ChatScreen> {
       children: [
         Container(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: AppColors.primaryDarkE,
             borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(0),
@@ -576,14 +574,14 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         title: Column(
           children: [
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
             Row(
               children: [
                 Container(
                   padding: EdgeInsets.all(4),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                       color: AppColors.primaryDark,
                       borderRadius: BorderRadius.all(Radius.circular(64))),
                   child: Image.asset(
@@ -602,14 +600,14 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ],
             ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             )
           ],
         ),
         actions: [
           PopupMenuButton<String>(
-            icon: Icon(Icons.more_vert, color: AppColors.accent),
+            icon: const Icon(Icons.more_vert, color: AppColors.accent),
             color: AppColors.primaryDark,
             onSelected: (String result) {
               if (_chatId == null) {
@@ -682,7 +680,7 @@ class _ChatScreenState extends State<ChatScreen> {
         child: Column(
           children: [
             if (_isLoading)
-              Expanded(
+              const Expanded(
                 child: Center(
                   child: CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
