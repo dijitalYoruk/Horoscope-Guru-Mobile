@@ -3,6 +3,7 @@ import 'package:horoscopeguruapp/screens/chat_screen.dart';
 import 'package:horoscopeguruapp/screens/home_screen.dart';
 import 'package:horoscopeguruapp/screens/login_screen.dart';
 import 'package:horoscopeguruapp/screens/user_profile_screen.dart';
+import 'package:horoscopeguruapp/screens/all_chats_screen.dart';
 import 'package:horoscopeguruapp/theme/colors.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -77,6 +78,7 @@ class _MyAppState extends State<MyApp> {
         '/home': (context) => const HomeScreen(),
         '/chat': (context) => const ChatScreen(),
         '/userProfile': (context) => const UserProfileScreen(),
+        '/allChats': (context) => const AllChatsScreen(),
       },
       navigatorObservers: [routeObserver],
     );

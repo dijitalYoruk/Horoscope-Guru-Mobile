@@ -12,6 +12,7 @@ import 'package:horoscopeguruapp/main.dart'
 
 import 'package:horoscopeguruapp/api/api.dart';
 import 'package:horoscopeguruapp/theme/colors.dart';
+import 'package:horoscopeguruapp/screens/all_chats_screen.dart';
 
 // Global route observer
 final RouteObserver<PageRoute<dynamic>> routeObserver =
@@ -149,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                 onPressed: () {
                   setState(() {
                     _funnyAstroQuote =
-                    _astroQuotes[Random().nextInt(_astroQuotes.length)];
+                        _astroQuotes[Random().nextInt(_astroQuotes.length)];
                   });
                 },
               ),
@@ -200,7 +201,13 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                   Row(
                     children: [
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const AllChatsScreen()),
+                          );
+                        },
                         child: Text(
                           localizations.viewAll,
                           style: const TextStyle(color: AppColors.accent),
