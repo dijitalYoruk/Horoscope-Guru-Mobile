@@ -87,5 +87,8 @@
   "noRecents": "Son Yok",
   "horoscopeGuru": "Burç Gurusu",
   "languageEnglish": "İngilizce",
-  "languageTurkish": "Türkçe"
+  "languageTurkish": "Türkçe",
+  "cosmicQuestions": "Kozmik Sorularınız",
+  "completeYourCosmicProfileToReceiveAccuratePredictions": "Doğru tahminler almak için kozmik profilinizi tamamlayın",
+  "deleteChat": "Sil"
 }

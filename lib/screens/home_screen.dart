@@ -236,6 +236,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                       itemCount: _chatHistory.length,
                       itemBuilder: (context, index) {
                         final chat = _chatHistory[index];
+
+                        if (chat.chatTitle == null || chat.chatTitle!.isEmpty) {
+                          return Container();
+                        }
+
                         return Dismissible(
                           key: Key(chat.chatId.toString()),
                           direction: DismissDirection.endToStart,
@@ -266,7 +271,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                                 vertical: 4,
                               ),
                               title: Text(
-                                chat.chatTitle!,
+                                chat.chatTitle ?? '',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 15,

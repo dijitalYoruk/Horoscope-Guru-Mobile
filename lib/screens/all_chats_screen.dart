@@ -86,6 +86,11 @@ class _AllChatsScreenState extends State<AllChatsScreen> with RouteAware {
                   itemCount: _chats.length,
                   itemBuilder: (context, index) {
                     final chat = _chats[index];
+
+                    if (chat.chatTitle == null || chat.chatTitle!.isEmpty) {
+                      return Container();
+                    }
+
                     return Dismissible(
                       key: Key(chat.chatId),
                       direction: DismissDirection.endToStart,

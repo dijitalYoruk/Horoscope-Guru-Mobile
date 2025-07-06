@@ -1,117 +1,26 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:horoscopeguruapp/api/api.dart';
+import 'package:horoscopeguruapp/screens/chat_bubble.dart';
 import 'package:horoscopeguruapp/screens/chat_emoji_picker.dart';
 import 'package:horoscopeguruapp/utils/environment_keys.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/rendering.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import 'package:horoscopeguruapp/theme/colors.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
-class ChatBubble extends StatelessWidget {
-  final ChatMessage message;
-  final Color userBubbleColor;
-  final Color aiBubbleColor;
-  final Color textColor;
-
-  const ChatBubble({
-    required this.message,
-    required this.userBubbleColor,
-    required this.aiBubbleColor,
-    required this.textColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: message.role == ChatMessageRole.user
-            ? MainAxisAlignment.end
-            : MainAxisAlignment.start,
-        children: [
-          if (message.role == ChatMessageRole.assistant)
-            CircleAvatar(
-              radius: 28,
-              backgroundColor: aiBubbleColor,
-              backgroundImage: const AssetImage('assets/images/logo.png'),
-            ),
-          if (message.role == ChatMessageRole.assistant)
-            const SizedBox(width: 8),
-          Flexible(
-            child: Column(
-              crossAxisAlignment: message.role == ChatMessageRole.user
-                  ? CrossAxisAlignment.end
-                  : CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: message.role == ChatMessageRole.user
-                        ? userBubbleColor
-                        : aiBubbleColor,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(
-                          message.role == ChatMessageRole.user ? 18 : 0),
-                      topRight: Radius.circular(
-                          message.role == ChatMessageRole.user ? 0 : 18),
-                      bottomLeft: const Radius.circular(18),
-                      bottomRight: const Radius.circular(18),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: MarkdownBody(
-                    data: message.content,
-                    styleSheet: MarkdownStyleSheet(
-                      p: TextStyle(
-                          color: message.role == ChatMessageRole.user
-                              ? AppColors.primaryDark
-                              : AppColors.textColor,
-                          fontSize: 15,
-                          height: 1.4),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(
-                    timeago.format(message.updatedAt),
-                    style: TextStyle(
-                      color: Colors.grey.shade400,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class ChatScreen extends StatefulWidget {
   final String? chatId;
-
-  const ChatScreen({super.key, this.chatId});
-
   static const bool enableAds = true;
   static const int maxMessages = 4;
   static const int maxUserMessages = 25;
   static const String messageCountKey = 'message_count';
+
+  const ChatScreen({super.key, this.chatId});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -120,8 +29,8 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final FocusNode _messageFocusNode = FocusNode();
-
   final List<ChatMessage> _messages = [];
+  late IO.Socket socket;
 
   RewardedAd? _rewardedAd;
   int _messageCount = 0;
@@ -130,13 +39,20 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _isProcessingMessage = false;
   bool _isInputAreaVisible = false;
 
-  String get _adUnitId => Platform.isIOS ? EnvironmentKeys.IosAdMobIdAndroid : EnvironmentKeys.GoogleAdMobIdAndroid;
-
+  String get _adUnitId => Platform.isIOS
+      ? EnvironmentKeys.IosAdMobIdAndroid
+      : EnvironmentKeys.GoogleAdMobIdAndroid;
   String? _chatId;
+  var _isPageLoading = true;
 
   @override
   void initState() {
     super.initState();
+
+    setState(() {
+      _isPageLoading = true;
+    });
+
     _chatId = widget.chatId;
 
     _loadMessageCount();
@@ -146,6 +62,59 @@ class _ChatScreenState extends State<ChatScreen> {
     _messageController.addListener(() {
       // Remove the auto-close behavior when text changes
     });
+
+    socket = IO.io(
+      EnvironmentKeys.SocketUrl,
+      IO.OptionBuilder()
+          .setTransports(['websocket']) // zorunlu
+          .build(),
+    );
+
+    socket.onConnect((_) {
+      print('Socket connected: ${socket.id}');
+    });
+
+    socket.on('message_token', (data) {
+      if (_messages.isEmpty || _messages[0].role == ChatMessageRole.user) {
+        setState(() {
+          _isPageLoading = false;
+          _isProcessingMessage = true;
+
+          _messages.insert(
+              0,
+              ChatMessage(
+                content: data['content'],
+                role: ChatMessageRole.assistant,
+                updatedAt: HttpDate.parse(data['updatedAt']),
+              ));
+        });
+      } else {
+        setState(() {
+          var a = _messages[0].content;
+          _messages[0].content = a + data['content'];
+          _messages[0].updatedAt = HttpDate.parse(data['updatedAt']);
+        });
+      }
+    });
+
+    socket.on('message_finished', (_) {
+      setState(() {
+        _isProcessingMessage = false;
+      });
+    });
+
+    socket.on('chat_error', (data) {
+      Fluttertoast.showToast(
+        msg: data['message'],
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: AppColors.accent,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    });
+
+    socket.connect();
 
     if (_chatId != null) {
       _getChatById().then((_) {
@@ -162,6 +131,13 @@ class _ChatScreenState extends State<ChatScreen> {
         });
       });
     }
+  }
+
+  @override
+  void dispose() {
+    socket.off('chat_token');
+    socket.dispose();
+    super.dispose();
   }
 
   Future<void> _loadMessageCount() async {
@@ -281,6 +257,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     setState(() {
       _isProcessingMessage = true;
+      _isEmojiPickerVisible = false;
     });
 
     if (ChatScreen.enableAds &&
@@ -308,10 +285,6 @@ class _ChatScreenState extends State<ChatScreen> {
     });
 
     await _sendMessage();
-
-    setState(() {
-      _isProcessingMessage = false;
-    });
   }
 
   void _showRewardedAdDialog() {
@@ -373,7 +346,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  Widget _buildInputArea(Color textColor, Color buttonColor) {
+  Widget _buildInputArea(Color textColor, Color buttonColor, bool isMessageProcessing, bool isPageLoading) {
     // Check if user message limit is reached
     int userMessageCount =
         _messages.where((msg) => msg.role == ChatMessageRole.user).length;
@@ -409,7 +382,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           controller: _messageController,
                           focusNode: _messageFocusNode,
                           style: TextStyle(color: textColor),
-                          enabled: !isLimitReached,
+                          enabled: !(isLimitReached || isMessageProcessing || isPageLoading),
                           decoration: InputDecoration.collapsed(
                             hintText: isLimitReached
                                 ? 'Chat limit reached.'
@@ -434,7 +407,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             color: isLimitReached
                                 ? AppColors.accent.withOpacity(0.5)
                                 : AppColors.accent),
-                        onPressed: isLimitReached
+                        onPressed: isLimitReached || isMessageProcessing || isPageLoading
                             ? null
                             : () {
                                 setState(() {
@@ -482,31 +455,19 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  var _isLoading = false;
-
   Future<void> _startNewChat() async {
     setState(() {
-      _isLoading = true;
+      _isPageLoading = true;
     });
 
-    try {
-      final api = Api();
-      final response = await api.startChat(context);
-
-      setState(() {
-        _messages.add(response.message);
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    var prefs = await SharedPreferences.getInstance();
+    var accessToken = prefs.getString('access_token');
+    socket.emit('start_chat', {'accessToken': accessToken});
   }
 
   Future<void> _getChatById() async {
     setState(() {
-      _isLoading = true;
+      _isPageLoading = true;
     });
 
     try {
@@ -515,44 +476,27 @@ class _ChatScreenState extends State<ChatScreen> {
 
       setState(() {
         _messages.addAll(response.chatMessages);
-        _isLoading = false;
+        _isPageLoading = false;
       });
     } catch (e) {
       setState(() {
-        _isLoading = false;
+        _isPageLoading = false;
       });
     }
   }
 
   Future<void> _sendMessage() async {
-    final api = Api();
-    final request = PostChatRequest(
-      chatId: _chatId,
-      message: _messages.first.content,
-      initialMessage: _messages.last,
-    );
-
-    try {
-      final response = await api.sendMessageToChat(request, context);
-
-      setState(() {
-        _messages.insert(
-            0,
-            ChatMessage(
-              content: response.message.content,
-              role: response.message.role,
-              updatedAt: response.message.updatedAt,
-            ));
-        _chatId = response.chatId;
-        _isLoading = false;
-        _messageCount++;
-        _saveMessageCount(_messageCount);
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    var prefs = await SharedPreferences.getInstance();
+    var accessToken = prefs.getString('access_token');
+    socket.emit("send_message", {
+      {
+        'accessToken': accessToken,
+        'chatId': _chatId,
+        'message': _messages.first.content,
+        'initialMessage': _messages.last
+      }
+    });
+    FocusScope.of(context).requestFocus(FocusNode());
   }
 
   @override
@@ -664,10 +608,10 @@ class _ChatScreenState extends State<ChatScreen> {
               }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              const PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: 'delete',
-                child: Text('Delete Chat',
-                    style: TextStyle(
+                child: Text(AppLocalizations.of(context)!.deleteChat,
+                    style: const TextStyle(
                         color: AppColors.accent,
                         fontSize: 16,
                         fontWeight: FontWeight.w700)),
@@ -679,60 +623,61 @@ class _ChatScreenState extends State<ChatScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            if (_isLoading)
-              const Expanded(
-                child: Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: backgroundColor,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
                   ),
-                ),
-              )
-            else
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: backgroundColor,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(24),
-                      topRight: Radius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 10,
+                      spreadRadius: 2,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 10,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(24),
-                        topRight: Radius.circular(24),
-                      ),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 16),
-                          Expanded(
-                            child: ListView.builder(
-                              reverse: true,
-                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                              itemCount: _messages.length,
-                              itemBuilder: (context, index) {
-                                return ChatBubble(
-                                  message: _messages[index],
-                                  userBubbleColor: AppColors.accent,
-                                  aiBubbleColor: AppColors.primary,
-                                  textColor: textColor,
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-                      )),
+                  ],
                 ),
+                child: _isPageLoading
+                    ? const Expanded(
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(AppColors.accent),
+                          ),
+                        ),
+                      )
+                    : ClipRRect(
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(24),
+                          topRight: Radius.circular(24),
+                        ),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 16),
+                            Expanded(
+                              child: ListView.builder(
+                                reverse: true,
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                                itemCount: _messages.length,
+                                itemBuilder: (context, index) {
+                                  return ChatBubble(
+                                    message: _messages[index],
+                                    userBubbleColor: AppColors.accent,
+                                    aiBubbleColor: AppColors.primary,
+                                    textColor: textColor,
+                                  );
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                        )),
               ),
-            if (_isProcessingMessage)
+            ),
+            if (!_isPageLoading && _isProcessingMessage)
               Container(
                 width: double.infinity,
                 color: AppColors.accent.withOpacity(0.1),
@@ -759,7 +704,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ),
             if (_isInputAreaVisible)
-              _buildInputArea(textColor, AppColors.accent),
+              _buildInputArea(textColor, AppColors.accent, _isProcessingMessage, _isPageLoading),
           ],
         ),
       ),

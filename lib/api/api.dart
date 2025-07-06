@@ -198,8 +198,8 @@ class Chat {
 
 class ChatMessage {
   final ChatMessageRole role;
-  final String content;
-  final DateTime updatedAt;
+  String content;
+  DateTime updatedAt;
 
   ChatMessage({
     required this.role,

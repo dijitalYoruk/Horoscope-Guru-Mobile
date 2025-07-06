@@ -88,5 +88,6 @@
   "notSet": "Not set",
   "notSetOptional": "Not set (optional)",
   "languageEnglish": "English",
-  "languageTurkish": "Turkish"
+  "languageTurkish": "Turkish",
+  "deleteChat": "Delete"
 } 
