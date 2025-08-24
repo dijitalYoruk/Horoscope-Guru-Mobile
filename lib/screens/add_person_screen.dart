@@ -5,6 +5,7 @@ import 'package:horoscopeguruapp/theme/colors.dart';
 import 'package:horoscopeguruapp/models/person.dart';
 import 'package:horoscopeguruapp/services/people_service.dart';
 import 'package:uuid/uuid.dart';
+import 'package:horoscopeguruapp/widgets/location_search_field.dart';
 
 class AddPersonScreen extends StatefulWidget {
   const AddPersonScreen({super.key});
@@ -245,18 +246,35 @@ class _AddPersonScreenState extends State<AddPersonScreen> {
 
                 const SizedBox(height: 20),
 
-                // Birth Place
-                _buildInputField(
-                  controller: _birthPlaceController,
-                  label: localizations.birthPlace,
-                  icon: Icons.place,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Birth place is required';
-                    }
-                    return null;
-                  },
-                  isRequired: true,
+                // Birth Place with Google Places API
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                        color: Colors.grey.withOpacity(0.3), width: 1),
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.place,
+                          color: AppColors.accent, size: 24),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: LocationSearchField(
+                          controller: _birthPlaceController,
+                          labelText: localizations.birthPlace,
+                          hintText: localizations.cityCountry,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Birth place is required';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
 
                 const SizedBox(height: 20),

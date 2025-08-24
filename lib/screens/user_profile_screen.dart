@@ -5,6 +5,7 @@ import 'package:horoscopeguruapp/theme/colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:horoscopeguruapp/main.dart'
     as mainApp; // Import for the changeLocale function
+import 'package:horoscopeguruapp/widgets/location_search_field.dart';
 
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({Key? key}) : super(key: key);
@@ -221,26 +222,32 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               // Scrollable content
               const SizedBox(height: 36),
               // Header section
-              Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    IconButton(onPressed: () {
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                child:
+                    Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+                  IconButton(
+                      onPressed: () {
                         Navigator.pop(context);
-
-                    },  icon: Icon(Icons.arrow_back, color: AppColors.accent, size: 22)),
-                    Text(
-                      localizations.tellTheStarsAboutYourself,
-                      style: TextStyle(
-                        color: Colors.orange,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),]), ),
+                      },
+                      icon: Icon(Icons.arrow_back,
+                          color: AppColors.accent, size: 22)),
+                  Text(
+                    localizations.tellTheStarsAboutYourself,
+                    style: TextStyle(
+                      color: Colors.orange,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ]),
+              ),
 
               Expanded(
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 0),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20.0, vertical: 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -478,7 +485,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Birth place field
+                        // Birth place field with Google Places API
                         Container(
                           decoration: BoxDecoration(
                             color: AppColors.primary.withOpacity(0.3),
@@ -493,14 +500,21 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                   color: Colors.orange, size: 24),
                               const SizedBox(width: 16),
                               Expanded(
-                                child: TextField(
+                                child: LocationSearchField(
                                   controller: _birthPlaceController,
-                                  style: const TextStyle(color: Colors.white),
-                                  decoration: _getInputDecoration(
-                                    labelText: localizations.birthPlace,
-                                    hintText: localizations.cityCountry,
-                                  ),
-                                  onChanged: (_) => setState(() {}),
+                                  labelText: localizations.birthPlace,
+                                  hintText: localizations.cityCountry,
+                                  validator: (value) {
+                                    if (_showValidationErrors &&
+                                        (value == null ||
+                                            value.trim().isEmpty)) {
+                                      return '${localizations.birthPlace} ${localizations.isRequired}';
+                                    }
+                                    return null;
+                                  },
+                                  onLocationSelected: (location) {
+                                    setState(() {});
+                                  },
                                 ),
                               ),
                             ],

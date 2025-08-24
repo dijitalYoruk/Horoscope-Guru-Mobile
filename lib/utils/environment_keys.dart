@@ -7,4 +7,5 @@ class EnvironmentKeys {
   static const String IosAdMobIdAndroid =
       'ca-app-pub-3940256099942544/5224354917';
   static const String SocketUrl = "ws://10.0.2.2:3001";
+  static const String GooglePlacesApiKey = "AIzaSyCj0MHk2YMhiBhaCO7tcYbeOXAFL3HRPow";
 }
