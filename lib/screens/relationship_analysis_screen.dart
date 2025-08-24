@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:horoscopeguruapp/theme/colors.dart';
 import 'package:horoscopeguruapp/screens/chat_screen.dart';
-import 'package:horoscopeguruapp/models/relationship_data.dart';
+import 'package:horoscopeguruapp/screens/add_person_screen.dart';
+import 'package:horoscopeguruapp/models/person.dart';
+import 'package:horoscopeguruapp/services/people_service.dart';
 
 class RelationshipAnalysisScreen extends StatefulWidget {
   const RelationshipAnalysisScreen({super.key});
@@ -15,102 +16,121 @@ class RelationshipAnalysisScreen extends StatefulWidget {
 
 class _RelationshipAnalysisScreenState
     extends State<RelationshipAnalysisScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _partnerNameController = TextEditingController();
-  DateTime? _selectedBirthDate;
-  final _birthPlaceController = TextEditingController();
-  TimeOfDay? _selectedBirthTime;
-
-  bool _isLoading = false;
+  List<Person> _people = [];
+  bool _isLoading = true;
 
   @override
-  void dispose() {
-    _partnerNameController.dispose();
-    _birthPlaceController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _loadPeople();
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedBirthDate ?? DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: AppColors.accent,
-              onPrimary: AppColors.primary,
-              surface: AppColors.primary,
-              onSurface: AppColors.textColor,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-    if (picked != null && picked != _selectedBirthDate) {
+  Future<void> _loadPeople() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final people = await PeopleService.getAllPeople();
       setState(() {
-        _selectedBirthDate = picked;
+        _people = people;
+        _isLoading = false;
       });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading people: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
-  Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: _selectedBirthTime ?? TimeOfDay.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: AppColors.accent,
-              onPrimary: AppColors.primary,
-              surface: AppColors.primary,
-              onSurface: AppColors.textColor,
-            ),
-          ),
-          child: child!,
-        );
-      },
+  Future<void> _addNewPerson() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AddPersonScreen(),
+      ),
     );
-    if (picked != null && picked != _selectedBirthTime) {
-      setState(() {
-        _selectedBirthTime = picked;
-      });
+
+    if (result == true) {
+      // Refresh the list if a person was added
+      _loadPeople();
     }
   }
 
-  void _analyzeRelationship() {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+  void _navigateToChat(Person person) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChatScreen(
+          relationshipData: person.toRelationshipData(),
+        ),
+      ),
+    );
+  }
 
-      // Simulate API call
-      Future.delayed(const Duration(seconds: 2), () {
-        setState(() {
-          _isLoading = false;
-        });
-
-        // Navigate to chat screen with relationship analysis context
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ChatScreen(
-              relationshipData: RelationshipData(
-                partnerName: _partnerNameController.text.trim().isEmpty
-                    ? null
-                    : _partnerNameController.text.trim(),
-                partnerBirthDate: _selectedBirthDate,
-                partnerBirthPlace: _birthPlaceController.text.trim(),
-                partnerBirthTime: _selectedBirthTime,
-              ),
+  Future<void> _deletePerson(
+      Person person, AppLocalizations localizations) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.primary,
+        title: Text(
+          localizations.deletePerson,
+          style: const TextStyle(color: AppColors.textColor),
+        ),
+        content: Text(
+          '${localizations.areYouSureYouWantToDelete} ${person.displayName}? ${localizations.thisActionCannotBeUndone}.',
+          style: const TextStyle(color: AppColors.textColor),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              localizations.cancel,
+              style: const TextStyle(color: AppColors.accent),
             ),
           ),
-        );
-      });
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              localizations.deletePerson,
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await PeopleService.deletePerson(person.id);
+        _loadPeople();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(localizations.personDeletedSuccessfully),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error deleting person: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -122,7 +142,7 @@ class _RelationshipAnalysisScreenState
       backgroundColor: AppColors.primaryDark,
       appBar: AppBar(
         title: Text(
-          localizations.relationshipAnalysis,
+          localizations.yourRelationshipAnalysis,
           style: const TextStyle(
             color: AppColors.textColor,
             fontWeight: FontWeight.bold,
@@ -133,341 +153,287 @@ class _RelationshipAnalysisScreenState
         iconTheme: const IconThemeData(color: AppColors.accent),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(18),
+        child: Column(
+          children: [
+            // Header section
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.favorite,
+                    color: AppColors.accent,
+                    size: 48,
                   ),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.favorite,
-                        color: AppColors.accent,
-                        size: 48,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        localizations.enterPartnerDetails,
-                        style: const TextStyle(
-                          color: AppColors.textColor,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Enter your partner\'s details (name is optional) to start a relationship analysis chat',
-                        style: TextStyle(
-                          color: AppColors.textColor.withOpacity(0.8),
-                          fontSize: 16,
-                          height: 1.8,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Partner Name
-                _buildInputField(
-                  controller: _partnerNameController,
-                  label: localizations.partnerName,
-                  icon: Icons.person,
-                  validator: (value) {
-                    // Partner name is optional, no validation needed
-                    return null;
-                  },
-                  isRequired: false,
-                ),
-
-                const SizedBox(height: 20),
-
-                // Partner Birth Date
-                _buildDateField(
-                  label: localizations.partnerBirthDate,
-                  icon: Icons.calendar_today,
-                  selectedDate: _selectedBirthDate,
-                  onTap: () => _selectDate(context),
-                  validator: (value) {
-                    if (_selectedBirthDate == null) {
-                      return localizations.partnerBirthDateRequired;
-                    }
-                    return null;
-                  },
-                  isRequired: true,
-                ),
-
-                const SizedBox(height: 20),
-
-                // Partner Birth Place
-                _buildInputField(
-                  controller: _birthPlaceController,
-                  label: localizations.partnerBirthPlace,
-                  icon: Icons.place,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return localizations.partnerBirthPlaceRequired;
-                    }
-                    return null;
-                  },
-                  isRequired: true,
-                ),
-
-                const SizedBox(height: 20),
-
-                // Partner Birth Time (Optional)
-                _buildTimeField(
-                  label: localizations.partnerBirthTime,
-                  icon: Icons.access_time,
-                  selectedTime: _selectedBirthTime,
-                  onTap: () => _selectTime(context),
-                ),
-
-                const SizedBox(height: 32),
-
-                // Analyze Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _analyzeRelationship,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.accent,
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      elevation: 0,
+                  const SizedBox(height: 8),
+                  Text(
+                    localizations
+                        .manageYourPeopleAndStartRelationshipAnalysisChats,
+                    style: TextStyle(
+                      color: AppColors.textColor.withOpacity(0.8),
+                      fontSize: 16,
+                      height: 1.8,
                     ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  AppColors.primary),
-                              strokeWidth: 2,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+
+            // Content section
+            Expanded(
+              child: _isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(AppColors.accent),
+                      ),
+                    )
+                  : _people.isEmpty
+                      ? _buildEmptyState(localizations)
+                      : _buildPeopleList(localizations),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _addNewPerson,
+        backgroundColor: AppColors.accent,
+        foregroundColor: AppColors.primary,
+        icon: const Icon(Icons.add),
+        label: Text(
+          localizations.addPerson,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(AppLocalizations localizations) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.people_outline,
+            size: 80,
+            color: AppColors.textColor.withOpacity(0.5),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            localizations.noPeopleAddedYet,
+            style: TextStyle(
+              color: AppColors.textColor.withOpacity(0.8),
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            localizations.startByAddingPeopleToAnalyzeYourRelationships,
+            style: TextStyle(
+              color: AppColors.textColor.withOpacity(0.6),
+              fontSize: 16,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 32),
+          ElevatedButton.icon(
+            onPressed: _addNewPerson,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            icon: const Icon(Icons.add, color: AppColors.primary),
+            label: Text(
+              localizations.addYourFirstPerson,
+              style: const TextStyle(
+                color: AppColors.primary,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPeopleList(AppLocalizations localizations) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: _people.length,
+      itemBuilder: (context, index) {
+        final person = _people[index];
+        return _buildPersonCard(person, localizations);
+      },
+    );
+  }
+
+  Widget _buildPersonCard(Person person, AppLocalizations localizations) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: () => _navigateToChat(person),
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          person.displayName,
+                          style: const TextStyle(
+                            color: AppColors.textColor,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.calendar_today,
+                              size: 16,
+                              color: AppColors.accent,
                             ),
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.psychology,
-                                size: 24,
-                                color: AppColors.primary,
+                            const SizedBox(width: 8),
+                            Text(
+                              person.birthDateFormatted,
+                              style: TextStyle(
+                                color: AppColors.textColor.withOpacity(0.8),
+                                fontSize: 14,
                               ),
-                              const SizedBox(width: 12),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.place,
+                              size: 16,
+                              color: AppColors.accent,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                person.birthPlace,
+                                style: TextStyle(
+                                  color: AppColors.textColor.withOpacity(0.8),
+                                  fontSize: 14,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (person.birthTime != null) ...[
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.access_time,
+                                size: 16,
+                                color: AppColors.accent,
+                              ),
+                              const SizedBox(width: 8),
                               Text(
-                                'Start Relationship Chat',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.primary,
+                                person.birthTimeFormatted,
+                                style: TextStyle(
+                                  color: AppColors.textColor.withOpacity(0.8),
+                                  fontSize: 14,
                                 ),
                               ),
                             ],
                           ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInputField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    String? Function(String?)? validator,
-    bool isRequired = false,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: TextFormField(
-        controller: controller,
-        validator: validator,
-        style: const TextStyle(
-          color: AppColors.textColor,
-          fontSize: 16,
-        ),
-        decoration: InputDecoration(
-          labelText: isRequired ? '$label *' : label,
-          labelStyle: TextStyle(
-            color: AppColors.textColor.withOpacity(0.7),
-            fontSize: 16,
-          ),
-          prefixIcon: Icon(
-            icon,
-            color: AppColors.accent,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-          filled: true,
-          fillColor: AppColors.primary,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDateField({
-    required String label,
-    required IconData icon,
-    required DateTime? selectedDate,
-    required VoidCallback onTap,
-    String? Function(String?)? validator,
-    bool isRequired = false,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                color: AppColors.accent,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          label,
-                          style: TextStyle(
-                            color: AppColors.textColor.withOpacity(0.7),
-                            fontSize: 16,
-                          ),
-                        ),
-                        if (isRequired)
-                          Text(
-                            ' *',
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                        ],
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      selectedDate != null
-                          ? DateFormat('MMM dd, yyyy').format(selectedDate)
-                          : 'Select date',
-                      style: TextStyle(
-                        color: selectedDate != null
-                            ? AppColors.textColor
-                            : AppColors.textColor.withOpacity(0.5),
-                        fontSize: 16,
-                        fontWeight: selectedDate != null
-                            ? FontWeight.w500
-                            : FontWeight.normal,
-                      ),
+                  ),
+                  PopupMenuButton<String>(
+                    icon: Icon(
+                      Icons.more_vert,
+                      color: AppColors.textColor.withOpacity(0.7),
                     ),
-                  ],
+                    onSelected: (value) {
+                      if (value == 'delete') {
+                        _deletePerson(person, localizations);
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            const Icon(Icons.delete, color: Colors.red),
+                            const SizedBox(width: 8),
+                            Text(localizations.deletePerson),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: AppColors.accent.withOpacity(0.3),
+                  ),
                 ),
-              ),
-              Icon(
-                Icons.arrow_drop_down,
-                color: AppColors.accent,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTimeField({
-    required String label,
-    required IconData icon,
-    required TimeOfDay? selectedTime,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                color: AppColors.accent,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      label,
-                      style: TextStyle(
-                        color: AppColors.textColor.withOpacity(0.7),
-                        fontSize: 16,
-                      ),
+                    const Icon(
+                      Icons.chat_bubble_outline,
+                      size: 20,
+                      color: AppColors.accent,
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(width: 8),
                     Text(
-                      selectedTime != null
-                          ? selectedTime.format(context)
-                          : 'Select time (optional)',
-                      style: TextStyle(
-                        color: selectedTime != null
-                            ? AppColors.textColor
-                            : AppColors.textColor.withOpacity(0.5),
-                        fontSize: 16,
-                        fontWeight: selectedTime != null
-                            ? FontWeight.w500
-                            : FontWeight.normal,
+                      localizations.tapToStartRelationshipAnalysis,
+                      style: const TextStyle(
+                        color: AppColors.accent,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
-              ),
-              Icon(
-                Icons.arrow_drop_down,
-                color: AppColors.accent,
               ),
             ],
           ),
