@@ -597,6 +597,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                                   letterSpacing: 1.1,
                                 ),
                               ),
+
                               GestureDetector(
                                 onTap: _handleSignOut,
                                 child: Container(
@@ -624,94 +625,101 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
             // Daily Laughter Card - Commented out
             // _buildDailyLaughterCard(),
 
-            // Start Chat Button
+            // Action Buttons Row
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_userData == null ||
-                      _userData?.birthDate == null ||
-                      _userData!.birthDate!.isEmpty ||
-                      _userData?.birthPlace == null ||
-                      _userData!.birthPlace!.isEmpty) {
-                    Navigator.pushNamed(context, '/userProfile');
-                  } else {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ChatScreen(),
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  // Start Chat Button
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_userData == null ||
+                            _userData?.birthDate == null ||
+                            _userData!.birthDate!.isEmpty ||
+                            _userData?.birthPlace == null ||
+                            _userData!.birthPlace!.isEmpty) {
+                          Navigator.pushNamed(context, '/userProfile');
+                        } else {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ChatScreen(),
+                            ),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.accent,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        elevation: 0,
                       ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accent,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  elevation: 0,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.chat, size: 24, color: AppColors.primary),
-                    const SizedBox(width: 12),
-                    Text(
-                      localizations.askTheStars,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.chat,
+                              size: 24, color: AppColors.primary),
+                          const SizedBox(width: 8),
+                          Text(
+                            localizations.askTheStars,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  // Relationship Analysis Button
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const RelationshipAnalysisScreen(),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.favorite,
+                              size: 24, color: AppColors.accent),
+                          const SizedBox(width: 8),
+                          Text(
+                            localizations.relationshipAnalysis,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.accent,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-
-            // Relationship Analysis Button
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const RelationshipAnalysisScreen(),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  elevation: 0,
-                  side: const BorderSide(color: AppColors.accent, width: 2),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.favorite,
-                        size: 24, color: AppColors.accent),
-                    const SizedBox(width: 12),
-                    Text(
-                      localizations.relationshipAnalysis,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.accent,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
+            const SizedBox(height: 20),
             // Chat History Section
             _buildChatHistorySection(),
             const SizedBox(height: 20)
