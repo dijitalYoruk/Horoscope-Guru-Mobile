@@ -90,5 +90,15 @@
   "languageTurkish": "Türkçe",
   "cosmicQuestions": "Kozmik Sorularınız",
   "completeYourCosmicProfileToReceiveAccuratePredictions": "Doğru tahminler almak için kozmik profilinizi tamamlayın",
-  "deleteChat": "Sil"
+  "deleteChat": "Sil",
+  "relationshipAnalysis": "İlişki Analizi",
+  "enterPartnerDetails": "Partner Detaylarını Girin",
+  "partnerName": "Partner Adı",
+  "partnerBirthDate": "Partner Doğum Tarihi",
+  "partnerBirthPlace": "Partner Doğum Yeri",
+  "partnerBirthTime": "Partner Doğum Saati (İsteğe Bağlı)",
+  "analyzeRelationship": "İlişkiyi Analiz Et",
+  "partnerNameRequired": "Partner adı isteğe bağlıdır",
+  "partnerBirthDateRequired": "Partner doğum tarihi gereklidir",
+  "partnerBirthPlaceRequired": "Partner doğum yeri gereklidir"
 }

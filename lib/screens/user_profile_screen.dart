@@ -119,7 +119,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     if (picked != null) {
       setState(() {
         _birthDateController.text =
-            "${picked.day}/${picked.month}/${picked.year}";
+            "${picked.year.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
       });
     }
   }
@@ -146,10 +146,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
     if (picked != null) {
       setState(() {
-        final hour = picked.hourOfPeriod;
+        final hour = picked.hour.toString().padLeft(2, '0');
         final minute = picked.minute.toString().padLeft(2, '0');
-        final period = picked.period == DayPeriod.am ? 'AM' : 'PM';
-        _birthTimeController.text = "$hour:$minute $period";
+        _birthTimeController.text = "$hour:$minute";
       });
     }
   }

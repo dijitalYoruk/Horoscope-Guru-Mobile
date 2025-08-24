@@ -89,5 +89,15 @@
   "notSetOptional": "Not set (optional)",
   "languageEnglish": "English",
   "languageTurkish": "Turkish",
-  "deleteChat": "Delete"
+  "deleteChat": "Delete",
+  "relationshipAnalysis": "Relationship Analysis",
+  "enterPartnerDetails": "Enter Partner Details",
+  "partnerName": "Partner Name",
+  "partnerBirthDate": "Partner Birth Date",
+  "partnerBirthPlace": "Partner Birth Place",
+  "partnerBirthTime": "Partner Birth Time (Optional)",
+  "analyzeRelationship": "Analyze Relationship",
+  "partnerNameRequired": "Partner name is optional",
+  "partnerBirthDateRequired": "Partner birth date is required",
+  "partnerBirthPlaceRequired": "Partner birth place is required"
 } 

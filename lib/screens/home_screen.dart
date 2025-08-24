@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:horoscopeguruapp/screens/chat_screen.dart';
-import 'package:horoscopeguruapp/utils/funny_quotes.dart';
-import 'dart:math';
+// import 'package:horoscopeguruapp/utils/funny_quotes.dart';
+// import 'dart:math';
 import 'package:intl/intl.dart';
-import 'package:flutter/widgets.dart';
+// import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -13,6 +13,7 @@ import 'package:horoscopeguruapp/main.dart'
 import 'package:horoscopeguruapp/api/api.dart';
 import 'package:horoscopeguruapp/theme/colors.dart';
 import 'package:horoscopeguruapp/screens/all_chats_screen.dart';
+import 'package:horoscopeguruapp/screens/relationship_analysis_screen.dart';
 
 // Global route observer
 final RouteObserver<PageRoute<dynamic>> routeObserver =
@@ -26,9 +27,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with RouteAware {
-  // Daily Laughter Card Component
-  late String _funnyAstroQuote;
-  late List<String> _astroQuotes;
+  // Daily Laughter Card Component - Commented out
+  // late String _funnyAstroQuote;
+  // late List<String> _astroQuotes;
 
   // Expanded Chat History Data (20 items)
   List<Chat> _chatHistory = [];
@@ -47,8 +48,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   void didChangeDependencies() {
     super.didChangeDependencies();
     routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute<dynamic>);
-    _astroQuotes = FunnyAstroQuotes.getQuotes(context);
-    _funnyAstroQuote = _astroQuotes[Random().nextInt(_astroQuotes.length)];
+    // _astroQuotes = FunnyAstroQuotes.getQuotes(context);
+    // _funnyAstroQuote = _astroQuotes[Random().nextInt(_astroQuotes.length)];
   }
 
   @override
@@ -96,70 +97,69 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     }
   }
 
-  Widget _buildDailyLaughterCard() {
-    final localizations = AppLocalizations.of(context)!;
+  // Widget _buildDailyLaughterCard() {
+  //   final localizations = AppLocalizations.of(context)!;
 
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20),
-      padding: EdgeInsets.only(top: 20, bottom: 10, right: 16, left: 16),
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.sentiment_satisfied, color: AppColors.accent),
-              const SizedBox(width: 8),
-              Text(
-                localizations.todaysCosmicComedy,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.5,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _funnyAstroQuote,
-            style: const TextStyle(
-              color: AppColors.textColor,
-              fontSize: 15,
-              height: 1.5,
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                localizations.refreshForCosmicWisdom,
-                style: const TextStyle(
-                  color: AppColors.accent,
-                  fontSize: 12,
-                  fontStyle: FontStyle.italic,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              IconButton(
-                icon: Icon(Icons.refresh, color: AppColors.accent),
-                onPressed: () {
-                  setState(() {
-                    _funnyAstroQuote =
-                        _astroQuotes[Random().nextInt(_astroQuotes.length)];
-                  });
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+  //   return Container(
+  //     margin: EdgeInsets.symmetric(horizontal: 20),
+  //     padding: EdgeInsets.only(top: 20, bottom: 10, right: 16, left: 16),
+  //     decoration: BoxDecoration(
+  //       color: AppColors.primary,
+  //       borderRadius: BorderRadius.circular(18),
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Row(
+  //           children: [
+  //             const Icon(Icons.sentiment_satisfied, color: AppColors.accent),
+  //             const SizedBox(width: 8),
+  //             Text(
+  //               localizations.todaysCosmicComedy,
+  //               style: const TextStyle(
+  //                 color: Colors.white,
+  //                 fontSize: 14,
+  //                 fontWeight: FontWeight.bold,
+  //                 letterSpacing: 1.5,
+  //               ),
+  //             ),
+  //         ),
+  //         const SizedBox(height: 8),
+  //         Text(
+  //           _funnyAstroQuote,
+  //           style: const TextStyle(
+  //             color: AppColors.textColor,
+  //             fontSize: 15,
+  //             height: 1.5,
+  //           ),
+  //         ),
+  //         Row(
+  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //           children: [
+  //             Text(
+  //               localizations.refreshForCosmicWisdom,
+  //               style: const TextStyle(
+  //                 color: AppColors.accent,
+  //                 fontSize: 12,
+  //                 fontStyle: FontStyle.italic,
+  //                 fontWeight: FontWeight.w500,
+  //               ),
+  //             ),
+  //             IconButton(
+  //               icon: Icon(Icons.refresh, color: AppColors.accent),
+  //               onPressed: () {
+  //                 setState(() {
+  //                   _funnyAstroQuote =
+  //                       _astroQuotes[Random().nextInt(_astroQuotes.length)];
+  //                 );
+  //               },
+  //             ),
+  //           ],
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildChatHistorySection() {
     final secondaryTextColor = Colors.grey[400];
@@ -621,8 +621,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
               ),
             ),
 
-            // Daily Laughter Card
-            _buildDailyLaughterCard(),
+            // Daily Laughter Card - Commented out
+            // _buildDailyLaughterCard(),
 
             // Start Chat Button
             Container(
@@ -664,6 +664,47 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Relationship Analysis Button
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const RelationshipAnalysisScreen(),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  elevation: 0,
+                  side: const BorderSide(color: AppColors.accent, width: 2),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.favorite,
+                        size: 24, color: AppColors.accent),
+                    const SizedBox(width: 12),
+                    Text(
+                      localizations.relationshipAnalysis,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.accent,
                       ),
                     ),
                   ],

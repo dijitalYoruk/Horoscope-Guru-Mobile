@@ -12,15 +12,17 @@ import 'package:flutter/rendering.dart';
 import 'package:horoscopeguruapp/theme/colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:horoscopeguruapp/models/relationship_data.dart';
 
 class ChatScreen extends StatefulWidget {
   final String? chatId;
+  final RelationshipData? relationshipData;
   static const bool enableAds = true;
   static const int maxMessages = 4;
   static const int maxUserMessages = 25;
   static const String messageCountKey = 'message_count';
 
-  const ChatScreen({super.key, this.chatId});
+  const ChatScreen({super.key, this.chatId, this.relationshipData});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -43,6 +45,7 @@ class _ChatScreenState extends State<ChatScreen> {
       ? EnvironmentKeys.IosAdMobIdAndroid
       : EnvironmentKeys.GoogleAdMobIdAndroid;
   String? _chatId;
+  RelationshipData? _relationshipData;
   var _isPageLoading = true;
 
   @override
@@ -54,6 +57,7 @@ class _ChatScreenState extends State<ChatScreen> {
     });
 
     _chatId = widget.chatId;
+    _relationshipData = widget.relationshipData;
 
     _loadMessageCount();
     if (ChatScreen.enableAds) {
@@ -65,8 +69,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     socket = IO.io(
       EnvironmentKeys.SocketUrl,
-      IO.OptionBuilder()
-          .setTransports(['websocket']) // zorunlu
+      IO.OptionBuilder().setTransports(['websocket']) // zorunlu
           .build(),
     );
 
@@ -346,7 +349,8 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  Widget _buildInputArea(Color textColor, Color buttonColor, bool isMessageProcessing, bool isPageLoading) {
+  Widget _buildInputArea(Color textColor, Color buttonColor,
+      bool isMessageProcessing, bool isPageLoading) {
     // Check if user message limit is reached
     int userMessageCount =
         _messages.where((msg) => msg.role == ChatMessageRole.user).length;
@@ -382,7 +386,9 @@ class _ChatScreenState extends State<ChatScreen> {
                           controller: _messageController,
                           focusNode: _messageFocusNode,
                           style: TextStyle(color: textColor),
-                          enabled: !(isLimitReached || isMessageProcessing || isPageLoading),
+                          enabled: !(isLimitReached ||
+                              isMessageProcessing ||
+                              isPageLoading),
                           decoration: InputDecoration.collapsed(
                             hintText: isLimitReached
                                 ? 'Chat limit reached.'
@@ -407,7 +413,9 @@ class _ChatScreenState extends State<ChatScreen> {
                             color: isLimitReached
                                 ? AppColors.accent.withOpacity(0.5)
                                 : AppColors.accent),
-                        onPressed: isLimitReached || isMessageProcessing || isPageLoading
+                        onPressed: isLimitReached ||
+                                isMessageProcessing ||
+                                isPageLoading
                             ? null
                             : () {
                                 setState(() {
@@ -462,7 +470,14 @@ class _ChatScreenState extends State<ChatScreen> {
 
     var prefs = await SharedPreferences.getInstance();
     var accessToken = prefs.getString('access_token');
-    socket.emit('start_chat', {'accessToken': accessToken});
+    Map<String, dynamic> data = {'accessToken': accessToken};
+
+    // Add relationship data if available
+    if (_relationshipData != null) {
+      data['relationship'] =_relationshipData?.toJson();
+    }
+
+    socket.emit('start_chat', data);
   }
 
   Future<void> _getChatById() async {
@@ -488,15 +503,58 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _sendMessage() async {
     var prefs = await SharedPreferences.getInstance();
     var accessToken = prefs.getString('access_token');
-    socket.emit("send_message", {
-      {
-        'accessToken': accessToken,
-        'chatId': _chatId,
-        'message': _messages.first.content,
-        'initialMessage': _messages.last
-      }
-    });
+
+    Map<String, dynamic> messageData = {
+      'accessToken': accessToken,
+      'chatId': _chatId,
+      'message': _messages.first.content,
+      'initialMessage': _messages.last,
+    };
+
+    socket.emit("send_message", messageData);
     FocusScope.of(context).requestFocus(FocusNode());
+  }
+
+  Widget _buildRelationshipSummary() {
+    if (_relationshipData == null) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.accent, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.favorite, color: AppColors.accent, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Relationship Analysis',
+                style: TextStyle(
+                  color: AppColors.accent,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _relationshipData!.summary,
+            style: TextStyle(
+              color: AppColors.textColor,
+              fontSize: 14,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -656,6 +714,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         child: Column(
                           children: [
                             const SizedBox(height: 16),
+                            _buildRelationshipSummary(),
                             Expanded(
                               child: ListView.builder(
                                 reverse: true,
@@ -704,7 +763,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ),
             if (_isInputAreaVisible)
-              _buildInputArea(textColor, AppColors.accent, _isProcessingMessage, _isPageLoading),
+              _buildInputArea(textColor, AppColors.accent, _isProcessingMessage,
+                  _isPageLoading),
           ],
         ),
       ),
